@@ -8,3 +8,17 @@ The main motivation for this project is to familiarize ourselves with machine le
 ## Data source
 
 Exclusively [ECB's statistics portal](https://sdw.ecb.europa.eu/)
+
+## Contributing
+
+The repo uses black and mypy among other things.
+Make sure 
+
+### Setup
+
+Install dev dependencies:
+
+```shell
+pip install .[dev]
+```
+
