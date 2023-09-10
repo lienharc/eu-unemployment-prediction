@@ -7,7 +7,15 @@ The main motivation for this project is to familiarize ourselves with machine le
 
 ## Data source
 
-Exclusively [ECB's statistics portal](https://sdw.ecb.europa.eu/)
+The source for our data sets is the [ECB's statistics portal](https://sdw.ecb.europa.eu/), exclusively.
+
+We use a variety of macroeconomic metrics such as the unemployment data
+
+![unemployment](img/unemployment_seasonadjusted.png)
+
+or the GDP (at market price)
+
+![gdp](img/gdp_at_market_price.png)
 
 ## Contributing
 
