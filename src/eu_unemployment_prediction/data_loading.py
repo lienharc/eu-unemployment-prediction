@@ -14,7 +14,7 @@ def load_unemployment_data(
     return pd.read_csv(  # type: ignore
         file_path,
         header=5,
-        names=["date", "unemployment rate"],
+        names=["date", InputDataType.UNEMPLOYMENT.column_name],
         usecols=[0, 1],
         index_col=0,
         date_format="%Y%b",
@@ -25,27 +25,25 @@ def load_unemployment_data(
 def load_dollar_euro_exchange_rate(
     data_dir: Path, file_name: str = InputDataType.DOLLAR_EURO_EXCHANGE_RATE.default_file_name
 ) -> pd.Series:  # type: ignore
-    column_name = "exchange rate"
     file_path = data_dir / file_name
     return pd.read_csv(  # type: ignore
         file_path,
         header=5,
-        names=["date", column_name],
+        names=["date", InputDataType.DOLLAR_EURO_EXCHANGE_RATE.column_name],
         usecols=[0, 1],
         index_col=0,
         parse_dates=[0],
-        na_values={column_name: "-"},
+        na_values={InputDataType.DOLLAR_EURO_EXCHANGE_RATE.column_name: "-"},
     ).squeeze()
 
 
 # Type is ignored since mypy won't take pd.Series and intellij won't take pd.Series[float]
 def load_gdp(data_dir: Path, file_name: str = InputDataType.GDP.default_file_name) -> pd.Series:  # type: ignore
-    column_name = "gdp at market price"
     file_path = data_dir / file_name
     data_frame = pd.read_csv(
         file_path,
         header=5,
-        names=["date", column_name],
+        names=["date", InputDataType.GDP.column_name],
         usecols=[0, 1],
         index_col=0,
     )
@@ -57,12 +55,11 @@ def load_gdp(data_dir: Path, file_name: str = InputDataType.GDP.default_file_nam
 def load_gov_debt(
     data_dir: Path, file_name: str = InputDataType.GOV_DEBT.default_file_name
 ) -> pd.Series:  # type: ignore
-    column_name = "government debt"
     file_path = data_dir / file_name
     data_frame = pd.read_csv(
         file_path,
         header=5,
-        names=["date", column_name],
+        names=["date", InputDataType.GOV_DEBT.column_name],
         usecols=[0, 1],
         index_col=0,
     )
@@ -74,12 +71,11 @@ def load_gov_debt(
 def load_inflation_rate(
     data_dir: Path, file_name: str = InputDataType.INFLATION_RATE.default_file_name
 ) -> pd.Series:  # type: ignore
-    column_name = "inflation rate"
     file_path = data_dir / file_name
     data_frame = pd.read_csv(
         file_path,
         header=5,
-        names=["date", column_name],
+        names=["date", InputDataType.INFLATION_RATE.column_name],
         usecols=[0, 1],
         index_col=0,
         date_format="%Y%b",
@@ -91,12 +87,11 @@ def load_inflation_rate(
 def load_labour_productivity(
     data_dir: Path, file_name: str = InputDataType.LABOUR_PRODUCTIVITY.default_file_name
 ) -> pd.Series:  # type: ignore
-    column_name = "labour productivity"
     file_path = data_dir / file_name
     data_frame = pd.read_csv(
         file_path,
         header=5,
-        names=["date", column_name],
+        names=["date", InputDataType.LABOUR_PRODUCTIVITY.column_name],
         usecols=[0, 1],
         index_col=0,
     )
@@ -108,12 +103,11 @@ def load_labour_productivity(
 def load_monetary_aggregate_m3(
     data_dir: Path, file_name: str = InputDataType.MONETARY_AGGREGATE_M3.default_file_name
 ) -> pd.Series:  # type: ignore
-    column_name = "m3"
     file_path = data_dir / file_name
     data_frame = pd.read_csv(
         file_path,
         header=5,
-        names=["date", column_name],
+        names=["date", InputDataType.MONETARY_AGGREGATE_M3.column_name],
         usecols=[0, 1],
         index_col=0,
         date_format="%Y%b",
@@ -125,12 +119,11 @@ def load_monetary_aggregate_m3(
 def load_population(
     data_dir: Path, file_name: str = InputDataType.POPULATION.default_file_name
 ) -> pd.Series:  # type: ignore
-    column_name = "population"
     file_path = data_dir / file_name
     data_frame = pd.read_csv(
         file_path,
         header=5,
-        names=["date", column_name],
+        names=["date", InputDataType.POPULATION.column_name],
         usecols=[0, 1],
         index_col=0,
         date_format="%Y",
@@ -142,12 +135,11 @@ def load_population(
 def load_labour_costs(
     data_dir: Path, file_name: str = InputDataType.LABOUR_COSTS.default_file_name
 ) -> pd.Series:  # type: ignore
-    column_name = "labour costs"
     file_path = data_dir / file_name
     data_frame = pd.read_csv(
         file_path,
         header=5,
-        names=["date", column_name],
+        names=["date", InputDataType.LABOUR_COSTS.column_name],
         usecols=[0, 1],
         index_col=0,
     )
