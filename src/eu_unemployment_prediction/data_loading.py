@@ -119,3 +119,20 @@ def load_monetary_aggregate_m3(
         date_format="%Y%b",
     )
     return data_frame.squeeze()  # type: ignore
+
+
+# Type is ignored since mypy won't take pd.Series and intellij won't take pd.Series[float]
+def load_population(
+    data_dir: Path, file_name: str = InputDataType.POPULATION.default_file_name
+) -> pd.Series:  # type: ignore
+    column_name = "population"
+    file_path = data_dir / file_name
+    data_frame = pd.read_csv(
+        file_path,
+        header=5,
+        names=["date", column_name],
+        usecols=[0, 1],
+        index_col=0,
+        date_format="%Y",
+    )
+    return data_frame.squeeze()  # type: ignore

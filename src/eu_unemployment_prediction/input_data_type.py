@@ -9,6 +9,7 @@ class InputDataType(Enum):
     INFLATION_RATE = "inflation_rate.csv"
     LABOUR_PRODUCTIVITY = "labour_productivity.csv"
     MONETARY_AGGREGATE_M3 = "monetary_aggregate_m3.csv"
+    POPULATION = "population.csv"
 
     @property
     def default_file_name(self) -> str:

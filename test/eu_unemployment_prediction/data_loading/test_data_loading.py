@@ -12,6 +12,7 @@ from eu_unemployment_prediction.data_loading import (
     load_inflation_rate,
     load_labour_productivity,
     load_monetary_aggregate_m3,
+    load_population,
 )
 
 DATA_DIR = Path(__file__).parent.parent.parent.parent / "data"
@@ -93,3 +94,14 @@ def test_load_monetary_aggregate_m3() -> None:
     assert output_df.index[-1] == Timestamp.fromisoformat("1981-01-01T00:00")
     assert output_df[-1] == 10.2
     assert output_df.shape == (511,)
+
+
+def test_load_population() -> None:
+    output_df = load_population(DATA_DIR)
+
+    assert type(output_df) == pd.Series
+    assert output_df.index[0] == Timestamp.fromisoformat("2022-01-01T00:00")
+    assert output_df[0] == 348458.70
+    assert output_df.index[-1] == Timestamp.fromisoformat("1995-01-01T00:00")
+    assert output_df[-1] == 321215.41
+    assert output_df.shape == (28,)
