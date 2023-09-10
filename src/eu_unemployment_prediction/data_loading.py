@@ -2,6 +2,8 @@ from pathlib import Path
 
 import pandas as pd
 
+from eu_unemployment_prediction.date_conversion_helper import convert_quarterly_format_to_date
+
 
 # Type is ignored since mypy won't take pd.Series and intellij won't take pd.Series[float]
 def load_unemployment_data(file_path: Path) -> pd.Series:  # type: ignore
@@ -18,12 +20,27 @@ def load_unemployment_data(file_path: Path) -> pd.Series:  # type: ignore
 
 # Type is ignored since mypy won't take pd.Series and intellij won't take pd.Series[float]
 def load_dollar_euro_exchange_rate(file_path: Path) -> pd.Series:  # type: ignore
+    column_name = "exchange rate"
     return pd.read_csv(  # type: ignore
         file_path,
         header=5,
-        names=["date", "exchange rate"],
+        names=["date", column_name],
         usecols=[0, 1],
         index_col=0,
         parse_dates=[0],
-        na_values={"exchange rate": "-"},
+        na_values={column_name: "-"},
     ).squeeze()
+
+
+# Type is ignored since mypy won't take pd.Series and intellij won't take pd.Series[float]
+def load_gdp(file_path: Path) -> pd.Series:  # type: ignore
+    column_name = "gdp at market price"
+    data_frame = pd.read_csv(
+        file_path,
+        header=5,
+        names=["date", column_name],
+        usecols=[0, 1],
+        index_col=0,
+    )
+    data_frame.index = data_frame.index.map(convert_quarterly_format_to_date)
+    return data_frame.squeeze()  # type: ignore
