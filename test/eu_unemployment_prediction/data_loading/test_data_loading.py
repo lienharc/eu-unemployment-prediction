@@ -10,6 +10,7 @@ from eu_unemployment_prediction.data_loading import (
     load_gdp,
     load_gov_debt,
     load_inflation_rate,
+    load_labour_productivity,
 )
 
 DATA_DIR = Path(__file__).parent.parent.parent.parent / "data"
@@ -79,3 +80,16 @@ def test_load_inflation_rate() -> None:
     assert output_df.index[-1] == Timestamp.fromisoformat("1997-01-01T00:00")
     assert output_df[-1] == 2.0
     assert output_df.shape == (320,)
+
+
+def test_load_labour_productivity() -> None:
+    input_file = DATA_DIR / "labour_productivity.csv"
+
+    output_df = load_labour_productivity(input_file)
+
+    assert type(output_df) == pd.Series
+    assert output_df.index[0] == Timestamp.fromisoformat("2023-06-30T00:00")
+    assert output_df[0] == -0.9
+    assert output_df.index[-1] == Timestamp.fromisoformat("1996-03-31T00:00")
+    assert output_df[-1] == 0.9
+    assert output_df.shape == (110,)
