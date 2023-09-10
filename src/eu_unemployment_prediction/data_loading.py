@@ -58,3 +58,17 @@ def load_gov_debt(file_path: Path) -> pd.Series:  # type: ignore
     )
     data_frame.index = data_frame.index.map(convert_quarterly_format_to_date)
     return data_frame.squeeze()  # type: ignore
+
+
+# Type is ignored since mypy won't take pd.Series and intellij won't take pd.Series[float]
+def load_inflation_rate(file_path: Path) -> pd.Series:  # type: ignore
+    column_name = "inflation rate"
+    data_frame = pd.read_csv(
+        file_path,
+        header=5,
+        names=["date", column_name],
+        usecols=[0, 1],
+        index_col=0,
+        date_format="%Y%b",
+    )
+    return data_frame.squeeze()  # type: ignore
