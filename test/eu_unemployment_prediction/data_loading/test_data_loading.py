@@ -18,9 +18,7 @@ DATA_DIR = Path(__file__).parent.parent.parent.parent / "data"
 
 
 def test_load_unemployment_data() -> None:
-    input_file = DATA_DIR / "unemployment_seasonadjusted.csv"
-
-    output_df = load_unemployment_data(input_file)
+    output_df = load_unemployment_data(DATA_DIR)
 
     assert type(output_df) == pd.Series
     assert output_df.index[0] == Timestamp.fromisoformat("2023-07-01T00:00")
@@ -31,9 +29,7 @@ def test_load_unemployment_data() -> None:
 
 
 def test_load_dollar_euro_exchange_rate() -> None:
-    input_file = DATA_DIR / "dollar_euro_exchange_rate.csv"
-
-    output_df = load_dollar_euro_exchange_rate(input_file)
+    output_df = load_dollar_euro_exchange_rate(DATA_DIR)
 
     assert type(output_df) == pd.Series
     assert output_df.index[0] == Timestamp.fromisoformat("2023-09-08T00:00")
@@ -45,9 +41,7 @@ def test_load_dollar_euro_exchange_rate() -> None:
 
 
 def test_load_gdp() -> None:
-    input_file = DATA_DIR / "gdp_at_market_price.csv"
-
-    output_df = load_gdp(input_file)
+    output_df = load_gdp(DATA_DIR)
 
     assert type(output_df) == pd.Series
     assert output_df.index[0] == Timestamp.fromisoformat("2023-06-30T00:00")
@@ -58,9 +52,7 @@ def test_load_gdp() -> None:
 
 
 def test_load_government_debt() -> None:
-    input_file = DATA_DIR / "government_debt.csv"
-
-    output_df = load_gov_debt(input_file)
+    output_df = load_gov_debt(DATA_DIR)
 
     assert type(output_df) == pd.Series
     assert output_df.index[0] == Timestamp.fromisoformat("2023-03-31T00:00")
@@ -71,9 +63,7 @@ def test_load_government_debt() -> None:
 
 
 def test_load_inflation_rate() -> None:
-    input_file = DATA_DIR / "inflation_rate.csv"
-
-    output_df = load_inflation_rate(input_file)
+    output_df = load_inflation_rate(DATA_DIR)
 
     assert type(output_df) == pd.Series
     assert output_df.index[0] == Timestamp.fromisoformat("2023-08-01T00:00")
@@ -84,9 +74,7 @@ def test_load_inflation_rate() -> None:
 
 
 def test_load_labour_productivity() -> None:
-    input_file = DATA_DIR / "labour_productivity.csv"
-
-    output_df = load_labour_productivity(input_file)
+    output_df = load_labour_productivity(DATA_DIR)
 
     assert type(output_df) == pd.Series
     assert output_df.index[0] == Timestamp.fromisoformat("2023-06-30T00:00")
@@ -97,9 +85,7 @@ def test_load_labour_productivity() -> None:
 
 
 def test_load_monetary_aggregate_m3() -> None:
-    input_file = DATA_DIR / "monetary_aggregate_m3.csv"
-
-    output_df = load_monetary_aggregate_m3(input_file)
+    output_df = load_monetary_aggregate_m3(DATA_DIR)
 
     assert type(output_df) == pd.Series
     assert output_df.index[0] == Timestamp.fromisoformat("2023-07-01T00:00")

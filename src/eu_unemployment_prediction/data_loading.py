@@ -3,10 +3,14 @@ from pathlib import Path
 import pandas as pd
 
 from eu_unemployment_prediction.date_conversion_helper import convert_quarterly_format_to_date
+from eu_unemployment_prediction.input_data_type import InputDataType
 
 
 # Type is ignored since mypy won't take pd.Series and intellij won't take pd.Series[float]
-def load_unemployment_data(file_path: Path) -> pd.Series:  # type: ignore
+def load_unemployment_data(
+    data_dir: Path, file_name: str = InputDataType.UNEMPLOYMENT.default_file_name
+) -> pd.Series:  # type: ignore
+    file_path = data_dir / file_name
     return pd.read_csv(  # type: ignore
         file_path,
         header=5,
@@ -18,8 +22,11 @@ def load_unemployment_data(file_path: Path) -> pd.Series:  # type: ignore
 
 
 # Type is ignored since mypy won't take pd.Series and intellij won't take pd.Series[float]
-def load_dollar_euro_exchange_rate(file_path: Path) -> pd.Series:  # type: ignore
+def load_dollar_euro_exchange_rate(
+    data_dir: Path, file_name: str = InputDataType.DOLLAR_EURO_EXCHANGE_RATE.default_file_name
+) -> pd.Series:  # type: ignore
     column_name = "exchange rate"
+    file_path = data_dir / file_name
     return pd.read_csv(  # type: ignore
         file_path,
         header=5,
@@ -32,8 +39,9 @@ def load_dollar_euro_exchange_rate(file_path: Path) -> pd.Series:  # type: ignor
 
 
 # Type is ignored since mypy won't take pd.Series and intellij won't take pd.Series[float]
-def load_gdp(file_path: Path) -> pd.Series:  # type: ignore
+def load_gdp(data_dir: Path, file_name: str = InputDataType.GDP.default_file_name) -> pd.Series:  # type: ignore
     column_name = "gdp at market price"
+    file_path = data_dir / file_name
     data_frame = pd.read_csv(
         file_path,
         header=5,
@@ -46,8 +54,11 @@ def load_gdp(file_path: Path) -> pd.Series:  # type: ignore
 
 
 # Type is ignored since mypy won't take pd.Series and intellij won't take pd.Series[float]
-def load_gov_debt(file_path: Path) -> pd.Series:  # type: ignore
+def load_gov_debt(
+    data_dir: Path, file_name: str = InputDataType.GOV_DEBT.default_file_name
+) -> pd.Series:  # type: ignore
     column_name = "government debt"
+    file_path = data_dir / file_name
     data_frame = pd.read_csv(
         file_path,
         header=5,
@@ -60,8 +71,11 @@ def load_gov_debt(file_path: Path) -> pd.Series:  # type: ignore
 
 
 # Type is ignored since mypy won't take pd.Series and intellij won't take pd.Series[float]
-def load_inflation_rate(file_path: Path) -> pd.Series:  # type: ignore
+def load_inflation_rate(
+    data_dir: Path, file_name: str = InputDataType.INFLATION_RATE.default_file_name
+) -> pd.Series:  # type: ignore
     column_name = "inflation rate"
+    file_path = data_dir / file_name
     data_frame = pd.read_csv(
         file_path,
         header=5,
@@ -74,8 +88,11 @@ def load_inflation_rate(file_path: Path) -> pd.Series:  # type: ignore
 
 
 # Type is ignored since mypy won't take pd.Series and intellij won't take pd.Series[float]
-def load_labour_productivity(file_path: Path) -> pd.Series:  # type: ignore
+def load_labour_productivity(
+    data_dir: Path, file_name: str = InputDataType.LABOUR_PRODUCTIVITY.default_file_name
+) -> pd.Series:  # type: ignore
     column_name = "labour productivity"
+    file_path = data_dir / file_name
     data_frame = pd.read_csv(
         file_path,
         header=5,
@@ -88,8 +105,11 @@ def load_labour_productivity(file_path: Path) -> pd.Series:  # type: ignore
 
 
 # Type is ignored since mypy won't take pd.Series and intellij won't take pd.Series[float]
-def load_monetary_aggregate_m3(file_path: Path) -> pd.Series:  # type: ignore
+def load_monetary_aggregate_m3(
+    data_dir: Path, file_name: str = InputDataType.MONETARY_AGGREGATE_M3.default_file_name
+) -> pd.Series:  # type: ignore
     column_name = "m3"
+    file_path = data_dir / file_name
     data_frame = pd.read_csv(
         file_path,
         header=5,
