@@ -8,6 +8,7 @@ from eu_unemployment_prediction.data_loading import (
     load_unemployment_data,
     load_dollar_euro_exchange_rate,
     load_gdp,
+    load_gov_debt,
 )
 
 DATA_DIR = Path(__file__).parent.parent.parent.parent / "data"
@@ -51,3 +52,16 @@ def test_load_gdp() -> None:
     assert output_df.index[-1] == Timestamp.fromisoformat("1995-03-31T00:00")
     assert output_df[-1] == 1380494.80
     assert output_df.shape == (114,)
+
+
+def test_load_government_debt() -> None:
+    input_file = DATA_DIR / "government_debt.csv"
+
+    output_df = load_gov_debt(input_file)
+
+    assert type(output_df) == pd.Series
+    assert output_df.index[0] == Timestamp.fromisoformat("2023-03-31T00:00")
+    assert output_df[0] == 91.230
+    assert output_df.index[-1] == Timestamp.fromisoformat("2000-03-31T00:00")
+    assert output_df[-1] == 71.460
+    assert output_df.shape == (93,)
