@@ -9,13 +9,14 @@ The main motivation for this project is to familiarize ourselves with machine le
 
 The source for our data sets is the [ECB's statistics portal](https://sdw.ecb.europa.eu/), exclusively.
 
-We use a variety of macroeconomic metrics such as the unemployment data
+We use a variety of macroeconomic metrics such as the unemployment data, the GDP (at market price), or the population.
 
-![unemployment](img/unemployment_seasonadjusted.png)
+<p float="middle">
+<img src="img/unemployment_seasonadjusted.png" alt="unemployment chart" width="250">
+<img src="img/gdp_at_market_price.png" alt="gdp chart" width="250">
+<img src="img/population.png" alt="population" width="250">
+</p>
 
-or the GDP (at market price)
-
-![gdp](img/gdp_at_market_price.png)
 
 ## Contributing
 
