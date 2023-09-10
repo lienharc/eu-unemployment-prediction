@@ -136,3 +136,20 @@ def load_population(
         date_format="%Y",
     )
     return data_frame.squeeze()  # type: ignore
+
+
+# Type is ignored since mypy won't take pd.Series and intellij won't take pd.Series[float]
+def load_labour_costs(
+    data_dir: Path, file_name: str = InputDataType.LABOUR_COSTS.default_file_name
+) -> pd.Series:  # type: ignore
+    column_name = "labour costs"
+    file_path = data_dir / file_name
+    data_frame = pd.read_csv(
+        file_path,
+        header=5,
+        names=["date", column_name],
+        usecols=[0, 1],
+        index_col=0,
+    )
+    data_frame.index = data_frame.index.map(convert_quarterly_format_to_date)
+    return data_frame.squeeze()  # type: ignore

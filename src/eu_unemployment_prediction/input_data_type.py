@@ -10,6 +10,7 @@ class InputDataType(Enum):
     LABOUR_PRODUCTIVITY = "labour_productivity"
     MONETARY_AGGREGATE_M3 = "monetary_aggregate_m3"
     POPULATION = "population"
+    LABOUR_COSTS = "unit_labour_costs"
 
     @property
     def default_file_name(self) -> str:
