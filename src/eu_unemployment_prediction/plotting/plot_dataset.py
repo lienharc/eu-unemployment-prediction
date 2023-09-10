@@ -2,6 +2,9 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 from tueplots.constants.color.palettes import muted
 import seaborn as sns
+
+from eu_unemployment_prediction.input_data_type import InputDataType
+
 sns.set_theme(style="whitegrid")
 
 
@@ -12,7 +15,7 @@ IMG_DIR = Path(__file__).parent.parent.parent.parent / "img"
 
 
 def plot_unemployment_data():
-    csv_ = DATA_DIR / "unemployment_seasonadjusted.csv"
+    csv_ = DATA_DIR / InputDataType.UNEMPLOYMENT.default_file_name
     data = load_unemployment_data(csv_)
     sns.lineplot(data=data, palette=muted, linewidth=2.5)
     plt.savefig(IMG_DIR / "unemployment_seasonadjusted.png", dpi=500)
