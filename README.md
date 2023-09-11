@@ -5,7 +5,7 @@ zone based on macroeconomic data issued by ECB.
 
 The main motivation for this project is to familiarize ourselves with machine learning on time series data.
 
-## Data source
+## Data sources
 
 The source for our data sets is the [ECB's statistics portal](https://sdw.ecb.europa.eu/), exclusively.
 
@@ -16,6 +16,21 @@ We use a variety of macroeconomic metrics such as the unemployment data, the GDP
 <img src="img/gdp_at_market_price.png" alt="gdp chart" width="250">
 <img src="img/population.png" alt="population" width="250">
 </p>
+
+## Using a Gaussian process
+
+We do not expect much from "predicting" the unemployment rate using a simple Gaussian process approach based on historical unemployment rate data.
+After all, other than a general feeling for the variance of the unemployment rate, 
+there is not much to learn for the model.
+We do it anyway in order to familiarize ourselves with Gaussian processes, 
+and we might need it in the future to _interpolate_ data where there is a lack of it.
+
+As expected, while a Gaussian process with a Matérn kernel ($`\nu = \frac 12`$) fits the data quite well where it has data,
+it completely fails to predict anything about the future:
+
+![gp unemployment prediction](img/gp_unemployment_prediction.png)
+
+_See [unemployment_gp_trainer.py](src/eu_unemployment_prediction/simple_gp/unemployment_gp_trainer.py) for the code._
 
 
 ## Contributing
