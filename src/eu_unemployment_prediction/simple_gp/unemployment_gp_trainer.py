@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Optional
 
 import gpytorch
+import numpy as np
 import numpy.typing as npt
 import pandas
 import pandas as pd
@@ -26,7 +27,10 @@ _IMG_DIR = _PROJECT_DIR / "img"
 
 class UnemploymentGpTrainer:
     def __init__(
-        self, model: SimpleGpUnemploymentModel, unemployment_data: pd.Series[float], test_data_mask: npt.NDArray[bool]
+        self,
+        model: SimpleGpUnemploymentModel,
+        unemployment_data: pd.Series[float],
+        test_data_mask: npt.NDArray[np.bool_],
     ) -> None:
         self._unemployment_data = unemployment_data
         self._test_data_mask = test_data_mask
