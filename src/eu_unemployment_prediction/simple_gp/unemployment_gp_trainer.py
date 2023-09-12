@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Optional
 
 import gpytorch
+import numpy.typing as npt
 import pandas
 import pandas as pd
 import seaborn as sns
@@ -25,15 +26,15 @@ _IMG_DIR = _PROJECT_DIR / "img"
 
 class UnemploymentGpTrainer:
     def __init__(
-        self, model: SimpleGpUnemploymentModel, unemployment_data: pd.Series[float], num_test_data: int
+        self, model: SimpleGpUnemploymentModel, unemployment_data: pd.Series[float], test_data_mask: npt.NDArray[bool]
     ) -> None:
         self._unemployment_data = unemployment_data
-        self._num_test_data = num_test_data
+        self._test_data_mask = test_data_mask
 
         self._data_mean = unemployment_data.mean()  # type: float
         gp_adjusted_input_data = pandas.Series(self._unemployment_data.values - self._data_mean)  # type: ignore
-        self._test_data = gp_adjusted_input_data[: self._num_test_data]
-        self._train_data = gp_adjusted_input_data[self._num_test_data :]
+        self._test_data = gp_adjusted_input_data.loc[self._test_data_mask]
+        self._train_data = gp_adjusted_input_data.loc[self._test_data_mask == False]
 
         self._train_x = torch.tensor(self._train_data.index, dtype=torch.float32)
         self._train_y = torch.tensor(self._train_data.values, dtype=torch.float32)
@@ -92,7 +93,7 @@ class UnemploymentGpTrainer:
         result_df["gp_confidence_min"] = confidence_min + self._data_mean
         result_df["gp_confidence_max"] = confidence_max + self._data_mean
         result_df["data_type"] = "test"
-        result_df.iloc[self._num_test_data :, result_df.columns.get_loc("data_type")] = "train"
+        result_df.loc[self._test_data_mask == False, "data_type"] = "train"
 
         return result_df
 
@@ -120,9 +121,18 @@ class UnemploymentGpTrainer:
 
 
 if __name__ == "__main__":
+    # case = "interpolate"
+    case = "extrapolate"
+
     logging.basicConfig(level=logging.INFO)
     time_series_raw = load_unemployment_data(_DATA_DIR)
+    if case == "interpolate":
+        data_mask = ((time_series_raw.index > "2009-05-01") & (time_series_raw.index < "2010-01-01")) | (
+            (time_series_raw.index > "2021-05-01") & (time_series_raw.index < "2022-01-01")
+        )
+    else:
+        data_mask = time_series_raw.index > "2022-10-01"
     gp_model = SimpleGpUnemploymentModel(GaussianLikelihood())
-    trainer = UnemploymentGpTrainer(gp_model, time_series_raw, 5)
+    trainer = UnemploymentGpTrainer(gp_model, time_series_raw, data_mask)
     trainer.run()
-    trainer.plot(_IMG_DIR / "gp_unemployment_prediction.png")
+    trainer.plot(_IMG_DIR / f"gp_unemployment_prediction_{case}.png")

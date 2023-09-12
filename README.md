@@ -28,7 +28,11 @@ and we might need it in the future to _interpolate_ data where there is a lack o
 As expected, while a Gaussian process with a Matérn kernel ($`\nu = \frac 12`$) fits the data quite well where it has data,
 it completely fails to predict anything about the future:
 
-![gp unemployment prediction](img/gp_unemployment_prediction.png)
+![gp unemployment prediction](img/gp_unemployment_prediction_extrapolate.png)
+
+Interpolation works okay-ish if the gaps are not too wide:
+
+![gp unempoyment interpolation](img/gp_unemployment_prediction_interpolate.png)
 
 _See [unemployment_gp_trainer.py](src/eu_unemployment_prediction/simple_gp/unemployment_gp_trainer.py) for the code._
 
