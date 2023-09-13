@@ -4,23 +4,13 @@ from pathlib import Path
 import pandas as pd
 from pandas import Timestamp
 
-from eu_unemployment_prediction.data_loading import (
-    load_unemployment_data,
-    load_dollar_euro_exchange_rate,
-    load_gdp,
-    load_gov_debt,
-    load_inflation_rate,
-    load_labour_productivity,
-    load_monetary_aggregate_m3,
-    load_population,
-    load_labour_costs,
-)
+from eu_unemployment_prediction.input_data_type import InputDataType
 
-DATA_DIR = Path(__file__).parent.parent.parent.parent / "data"
+DATA_DIR = Path(__file__).parent.parent.parent / "data"
 
 
 def test_load_unemployment_data() -> None:
-    output_df = load_unemployment_data(DATA_DIR)
+    output_df = InputDataType.UNEMPLOYMENT.load_default(DATA_DIR)
 
     assert type(output_df) == pd.Series
     assert output_df.index[0] == Timestamp.fromisoformat("2023-07-01T00:00")
@@ -31,7 +21,7 @@ def test_load_unemployment_data() -> None:
 
 
 def test_load_dollar_euro_exchange_rate() -> None:
-    output_df = load_dollar_euro_exchange_rate(DATA_DIR)
+    output_df = InputDataType.DOLLAR_EURO_EXCHANGE_RATE.load_default(DATA_DIR)
 
     assert type(output_df) == pd.Series
     assert output_df.index[0] == Timestamp.fromisoformat("2023-09-08T00:00")
@@ -43,7 +33,7 @@ def test_load_dollar_euro_exchange_rate() -> None:
 
 
 def test_load_gdp() -> None:
-    output_df = load_gdp(DATA_DIR)
+    output_df = InputDataType.GDP.load_default(DATA_DIR)
 
     assert type(output_df) == pd.Series
     assert output_df.index[0] == Timestamp.fromisoformat("2023-06-30T00:00")
@@ -54,7 +44,7 @@ def test_load_gdp() -> None:
 
 
 def test_load_government_debt() -> None:
-    output_df = load_gov_debt(DATA_DIR)
+    output_df = InputDataType.GOV_DEBT.load_default(DATA_DIR)
 
     assert type(output_df) == pd.Series
     assert output_df.index[0] == Timestamp.fromisoformat("2023-03-31T00:00")
@@ -65,7 +55,7 @@ def test_load_government_debt() -> None:
 
 
 def test_load_inflation_rate() -> None:
-    output_df = load_inflation_rate(DATA_DIR)
+    output_df = InputDataType.INFLATION_RATE.load_default(DATA_DIR)
 
     assert type(output_df) == pd.Series
     assert output_df.index[0] == Timestamp.fromisoformat("2023-08-01T00:00")
@@ -76,7 +66,7 @@ def test_load_inflation_rate() -> None:
 
 
 def test_load_labour_productivity() -> None:
-    output_df = load_labour_productivity(DATA_DIR)
+    output_df = InputDataType.LABOUR_PRODUCTIVITY.load_default(DATA_DIR)
 
     assert type(output_df) == pd.Series
     assert output_df.index[0] == Timestamp.fromisoformat("2023-06-30T00:00")
@@ -87,7 +77,7 @@ def test_load_labour_productivity() -> None:
 
 
 def test_load_monetary_aggregate_m3() -> None:
-    output_df = load_monetary_aggregate_m3(DATA_DIR)
+    output_df = InputDataType.MONETARY_AGGREGATE_M3.load_default(DATA_DIR)
 
     assert type(output_df) == pd.Series
     assert output_df.index[0] == Timestamp.fromisoformat("2023-07-01T00:00")
@@ -98,7 +88,7 @@ def test_load_monetary_aggregate_m3() -> None:
 
 
 def test_load_population() -> None:
-    output_df = load_population(DATA_DIR)
+    output_df = InputDataType.POPULATION.load_default(DATA_DIR)
 
     assert type(output_df) == pd.Series
     assert output_df.index[0] == Timestamp.fromisoformat("2022-01-01T00:00")
@@ -109,7 +99,7 @@ def test_load_population() -> None:
 
 
 def test_load_labour_costs() -> None:
-    output_df = load_labour_costs(DATA_DIR)
+    output_df = InputDataType.LABOUR_COSTS.load_default(DATA_DIR)
 
     assert type(output_df) == pd.Series
     assert output_df.index[0] == Timestamp.fromisoformat("2023-06-30T00:00")

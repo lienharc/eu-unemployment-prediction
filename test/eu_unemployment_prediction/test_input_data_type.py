@@ -1,17 +1,15 @@
-import math
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-from eu_unemployment_prediction.data_loading import load_unemployment_data
 from eu_unemployment_prediction.input_data_type import InputDataType
 
 DATA_DIR = Path(__file__).parent.parent.parent / "data"
 
 
 def test_add_normalized_column_with_default_data_set() -> None:
-    data_set = load_unemployment_data(DATA_DIR).to_frame()
+    data_set = InputDataType.UNEMPLOYMENT.load_default(DATA_DIR).to_frame()
 
     data_set_with_normalized_column = InputDataType.UNEMPLOYMENT.add_normalized_column(data_set)
 
