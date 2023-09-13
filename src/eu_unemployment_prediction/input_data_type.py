@@ -17,6 +17,7 @@ from eu_unemployment_prediction.data_loading import (
     load_data_quarterly_index,
     load_data_yearly_index,
 )
+from eu_unemployment_prediction.date_conversion_helper import convert_timestamp_index_to_float
 
 sns.set_theme(style="whitegrid")
 
@@ -101,18 +102,10 @@ class InputDataType(Enum):
     def normalized_column_name(self) -> str:
         return self.column_name + " norm"
 
-    @property
-    def default_file_name(self) -> str:
-        return self.file_base_name + ".csv"
-
-    @property
-    def png_name(self) -> str:
-        return self.file_base_name + ".png"
-
     def load(self, data_dir: Path, file_name: str) -> pd.Series[float]:
         return self.value[2](data_dir, file_name, self.column_name)
 
-    def load_default(self, data_dir: Path) -> pd.Series[float]:
+    def load_default(self, data_dir: Path) -> pd.Series:
         return self.load(data_dir, self.file_base_name + ".csv")
 
     def plot(self, data_dir: Path, img_dir: Path) -> None:
@@ -120,9 +113,11 @@ class InputDataType(Enum):
         plt.savefig(img_dir / (self.file_base_name + ".png"), dpi=500)
         plt.clf()
 
-    def add_normalized_column(self, data_frame: pd.DataFrame) -> pd.DataFrame:
+    def load_with_normalized_column(self, data_dir: Path) -> pd.DataFrame:
+        data_frame = self.load_default(data_dir).to_frame()
         new_column = data_frame.loc[:, self.column_name].to_numpy(dtype=np.float32)
         data_frame[self.normalized_column_name] = self.normalize_function(new_column)
+        data_frame.insert(0, "float time", convert_timestamp_index_to_float(data_frame.index))
         return data_frame
 
     @classmethod
