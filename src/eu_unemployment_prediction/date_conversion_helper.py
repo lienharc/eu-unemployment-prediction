@@ -31,4 +31,4 @@ def convert_quarterly_format_to_date(input_date: str) -> pd.Timestamp:
 
 
 def convert_timestamp_index_to_float(index: pd.Index[pd.Timestamp]) -> npt.NDArray[np.float32]:
-    return index.astype(int).to_numpy(dtype=np.float32) * 1.0e-18
+    return index.astype(int).to_numpy(dtype=np.float32) * 1.0e-19

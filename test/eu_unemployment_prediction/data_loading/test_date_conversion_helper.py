@@ -44,5 +44,5 @@ def test_convert_timestamp_index_to_float() -> None:
     float_version = convert_timestamp_index_to_float(input_index)
 
     assert float_version.dtype == np.float32
-    assert (float_version < 10.0).all(), "Floating timestamps are not in the range of (1, 10)"
-    assert (float_version > 1.0).all(), "Floating timestamps are not in the range of (1, 10)"
+    assert (float_version < 1.0).all(), "Floating timestamps are not in the range of (1, 10)"
+    assert (float_version > 0.01).all(), "Floating timestamps are not in the range of (1, 10)"
