@@ -30,7 +30,7 @@ class UnemploymentLstmTrainer:
         self._model = lstm
         # todo: consider checking input_data properly (columns "float time", "unemployment rate",
         # todo: "unemployment rate norm"
-        self._input_data = input_data.iloc[::-1]
+        self._input_data = input_data
 
     @property
     def model(self) -> UnemploymentLstm:
