@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Optional, Tuple, overload
+from typing import Optional, Tuple, overload, Dict, Any
 
 import torch
 from torch import nn, Tensor
@@ -36,13 +36,15 @@ class UnemploymentLstm(nn.Module):
         return result, new_hidden
 
     def save(self, file_path: Path) -> None:
-        torch.save(self.state_dict(), file_path)
+        base_state = {"init_vars": {"hidden_dim": self.hidden_dim}}
+        state_dict = self.state_dict(destination=base_state)
+        torch.save(state_dict, file_path)
 
     @classmethod
     def load(cls, file_path: Path) -> "UnemploymentLstm":
-        state_dict = torch.load(file_path)
-        hidden_dim = state_dict["_output_layer.weight"].shape[1]  # don't ask.
-        loaded_model = cls(hidden_dim=hidden_dim)
+        state_dict = torch.load(file_path)  # type: Dict[str, Any]
+        init_vars = state_dict.pop("init_vars")  # don't ask.
+        loaded_model = cls(**init_vars)
         loaded_model.load_state_dict(state_dict)
         loaded_model.eval()
         return loaded_model
@@ -50,7 +52,7 @@ class UnemploymentLstm(nn.Module):
 
 if __name__ == "__main__":
     my_lstm = UnemploymentLstm(hidden_dim=8)
-    model_save_path = Path(__file__).parent.parent.parent.parent / "model" / "lstm" / "lstm.pt"
+    model_save_path = Path(__file__).parent / "lstm.pt"
     my_lstm.save(model_save_path)
     other_lstm = UnemploymentLstm.load(model_save_path)
 
