@@ -11,3 +11,8 @@ def project_dir() -> Path:
 @pytest.fixture
 def data_dir(project_dir: Path) -> Path:
     return project_dir / "data"
+
+
+@pytest.fixture
+def module_dir(project_dir: Path) -> Path:
+    return project_dir / "model"
