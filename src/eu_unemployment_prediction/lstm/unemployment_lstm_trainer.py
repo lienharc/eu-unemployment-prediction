@@ -1,10 +1,9 @@
 import logging
-from typing import Tuple
-
-import numpy.typing as npt
-import numpy as np
 from pathlib import Path
+from typing import Tuple, Generator, Optional
 
+import numpy as np
+import numpy.typing as npt
 import pandas as pd
 import seaborn as sns
 import torch
@@ -17,9 +16,7 @@ from eu_unemployment_prediction.lstm import UnemploymentLstm
 
 class UnemploymentLstmTrainer:
     def __init__(
-        self,
-        lstm: UnemploymentLstm,
-        input_data: pd.DataFrame,
+        self, lstm: UnemploymentLstm, input_data: pd.DataFrame, learning_rate: float = 0.001, chunk_size: int = 40
     ) -> None:
         """
         :param lstm: An instance of the unemployment LSTM to be trained
@@ -32,42 +29,58 @@ class UnemploymentLstmTrainer:
         # todo: "unemployment rate norm"
         self._input_data = input_data
 
+        self._chunk_size = chunk_size
+        self._optimizer = torch.optim.Adam(self._model.parameters(), lr=learning_rate)
+        self._loss_function = nn.MSELoss()
+
     @property
     def model(self) -> UnemploymentLstm:
         return self._model
 
-    def run(self, epochs: int = 1000, chunk_size: int = 10, learning_rate: float = 0.001) -> None:
-        train_chunks = [
-            self._input_data.iloc[i : i + chunk_size] for i in range(0, self._input_data.shape[0], chunk_size)
-        ]
-        optimizer = torch.optim.Adam(self._model.parameters(), lr=learning_rate)
-        loss_function = nn.MSELoss()
-
+    def run(self, epochs: int = 1000) -> None:
+        epoch = 0
         try:
             for epoch in range(epochs):
-                hidden, cell = (torch.randn(1, 1, self._model.hidden_dim), torch.randn(1, 1, self._model.hidden_dim))
-                for train_chunk in train_chunks:
-                    optimizer.zero_grad()
-                    hidden = hidden.detach()
-                    cell = cell.detach()
-
-                    unemployment_data = train_chunk.loc[:, InputDataType.UNEMPLOYMENT.normalized_column_name].to_numpy()
-                    # todo: float time sollte eine constante an geeigneter stelle sein
-                    training_slice = torch.tensor(unemployment_data[:-1].copy())
-                    lstm_input = training_slice.view(training_slice.shape[0], 1, -1)
-                    target_slice = unemployment_data[1:]
-                    targets = torch.tensor(target_slice.copy()).unsqueeze(-1)
-
-                    return_val = self._model(lstm_input, (hidden, cell))  # type: Tuple[Tensor, Tuple[Tensor, Tensor]]
-                    out, (hidden, cell) = return_val
-
-                    loss = loss_function(out, targets)
-
-                    loss.backward()
-                    optimizer.step()
+                loss = self._run_epoch()
+                if loss is None:
+                    logging.warning(
+                        f"Epoch {epoch:03d}/{epochs} | No training happened in this epoch. No training data?"
+                    )
                 logging.info(f"Epoch {epoch:03d}/{epochs} | loss: {loss}")
         except KeyboardInterrupt:
             logging.warning(f"Learning process interrupted by user at epoch {epoch}/{epochs}")
+
+    def _generate_chunks(self) -> Generator[pd.DataFrame, None, None]:
+        for i in range(0, self._input_data.shape[0], self._chunk_size):
+            yield self._input_data.iloc[i : i + self._chunk_size]
+
+    def _run_epoch(self) -> Optional[Tensor]:
+        loss = None
+        hidden, cell = (torch.randn(1, 1, self._model.hidden_dim), torch.randn(1, 1, self._model.hidden_dim))
+        for train_chunk in self._generate_chunks():
+            self._optimizer.zero_grad()
+            hidden = hidden.detach()
+            cell = cell.detach()
+
+            lstm_input, targets = self._get_input_and_target_from_chunk(train_chunk)
+            out, (hidden, cell) = self._model(lstm_input, (hidden, cell))
+            loss = self._loss_function(out, targets)
+
+            loss.backward()
+            self._optimizer.step()
+
+        return loss
+
+    @staticmethod
+    def _get_input_and_target_from_chunk(train_chunk: pd.DataFrame) -> Tuple[Tensor, Tensor]:
+        # todo: we are losing one datapoint at the edges for each chunk.
+        # todo: consider letting the generator generate the slices already which would remove these edge cases
+        unemployment_data = train_chunk.loc[:, InputDataType.UNEMPLOYMENT.normalized_column_name].to_numpy()
+        training_slice = torch.tensor(unemployment_data[:-1].copy())
+        lstm_input = training_slice.view(training_slice.shape[0], 1, -1)
+        target_slice = unemployment_data[1:]
+        targets = torch.tensor(target_slice.copy()).unsqueeze(-1)
+        return lstm_input, targets
 
     def plot(self, file_path: Path) -> None:
         sns.set_theme(style="whitegrid")
@@ -90,15 +103,16 @@ class UnemploymentLstmTrainer:
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
+    torch.manual_seed(42)
     project_dir = Path(__file__).parent.parent.parent.parent
     data_dir = project_dir / "data"
     img_dir = project_dir / "img"
     model_path = project_dir / "model" / "lstm" / "unemployment_lstm.pt"
 
-    input_data = InputDataType.UNEMPLOYMENT.load_with_normalized_column(data_dir)
-    trainer = UnemploymentLstmTrainer(UnemploymentLstm(64), input_data)
+    unemployment_data = InputDataType.UNEMPLOYMENT.load_with_normalized_column(data_dir)
+    trainer = UnemploymentLstmTrainer(UnemploymentLstm(64), unemployment_data, learning_rate=0.0001, chunk_size=30)
 
-    trainer.run(epochs=5000, chunk_size=30, learning_rate=0.0001)
+    trainer.run(epochs=5000)
 
     trainer.model.save(model_path)
     trainer.plot(img_dir / "lstm_unemployment.png")
