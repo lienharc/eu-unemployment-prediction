@@ -50,37 +50,34 @@ class UnemploymentLstmTrainer:
         except KeyboardInterrupt:
             logging.warning(f"Learning process interrupted by user at epoch {epoch}/{epochs}")
 
-    def _generate_chunks(self) -> Generator[pd.DataFrame, None, None]:
-        for i in range(0, self._input_data.shape[0], self._chunk_size):
-            yield self._input_data.iloc[i : i + self._chunk_size]
+    def _generate_chunks(self) -> Generator[Tuple[Tensor, Tensor], None, None]:
+        """Generates chunks of (training_data, target_data) tuples in the right shape"""
+        column_id = self._input_data.columns.get_loc(InputDataType.UNEMPLOYMENT.normalized_column_name)
+        input_data = self._input_data.iloc[:-1, column_id]
+        target_data = self._input_data.iloc[1:, column_id]
+        for start_index in range(0, self._input_data.shape[0], self._chunk_size):
+            stop_index = start_index + self._chunk_size
+            input_chunk = torch.tensor(input_data.iloc[start_index:stop_index].to_numpy())
+            target_chunk = torch.tensor(target_data.iloc[start_index:stop_index].to_numpy())
+            lstm_input = input_chunk.view(input_chunk.shape[0], 1, -1)
+            targets = target_chunk.unsqueeze(-1)
+            yield lstm_input, targets
 
     def _run_epoch(self) -> Optional[Tensor]:
         loss = None
         hidden, cell = (torch.randn(1, 1, self._model.hidden_dim), torch.randn(1, 1, self._model.hidden_dim))
-        for train_chunk in self._generate_chunks():
+        for train_chunk, target_chunk in self._generate_chunks():
             self._optimizer.zero_grad()
             hidden = hidden.detach()
             cell = cell.detach()
 
-            lstm_input, targets = self._get_input_and_target_from_chunk(train_chunk)
-            out, (hidden, cell) = self._model(lstm_input, (hidden, cell))
-            loss = self._loss_function(out, targets)
+            out, (hidden, cell) = self._model(train_chunk, (hidden, cell))
+            loss = self._loss_function(out, target_chunk)
 
             loss.backward()
             self._optimizer.step()
 
         return loss
-
-    @staticmethod
-    def _get_input_and_target_from_chunk(train_chunk: pd.DataFrame) -> Tuple[Tensor, Tensor]:
-        # todo: we are losing one datapoint at the edges for each chunk.
-        # todo: consider letting the generator generate the slices already which would remove these edge cases
-        unemployment_data = train_chunk.loc[:, InputDataType.UNEMPLOYMENT.normalized_column_name].to_numpy()
-        training_slice = torch.tensor(unemployment_data[:-1].copy())
-        lstm_input = training_slice.view(training_slice.shape[0], 1, -1)
-        target_slice = unemployment_data[1:]
-        targets = torch.tensor(target_slice.copy()).unsqueeze(-1)
-        return lstm_input, targets
 
     def plot(self, file_path: Path) -> None:
         sns.set_theme(style="whitegrid")
