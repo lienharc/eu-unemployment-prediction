@@ -32,6 +32,10 @@ class UnemploymentLstmTrainer:
         # todo: "unemployment rate norm"
         self._input_data = input_data.iloc[::-1]
 
+    @property
+    def model(self) -> UnemploymentLstm:
+        return self._model
+
     def run(self, epochs: int = 1000, chunk_size: int = 10, learning_rate: float = 0.001) -> None:
         train_chunks = [
             self._input_data.iloc[i : i + chunk_size] for i in range(0, self._input_data.shape[0], chunk_size)
@@ -89,9 +93,12 @@ if __name__ == "__main__":
     project_dir = Path(__file__).parent.parent.parent.parent
     data_dir = project_dir / "data"
     img_dir = project_dir / "img"
+    model_path = project_dir / "model" / "lstm" / "unemployment_lstm.pt"
+
     input_data = InputDataType.UNEMPLOYMENT.load_with_normalized_column(data_dir)
     trainer = UnemploymentLstmTrainer(UnemploymentLstm(64), input_data)
 
-    trainer.run(epochs=2000, chunk_size=50, learning_rate=0.001)
+    trainer.run(epochs=5000, chunk_size=30, learning_rate=0.0001)
 
+    trainer.model.save(model_path)
     trainer.plot(img_dir / "lstm_unemployment.png")

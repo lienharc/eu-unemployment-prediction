@@ -1,4 +1,5 @@
-from typing import Optional, Tuple, Union, overload
+from pathlib import Path
+from typing import Optional, Tuple, overload, Dict, Any
 
 import torch
 from torch import nn, Tensor
@@ -34,9 +35,27 @@ class UnemploymentLstm(nn.Module):
             return result
         return result, new_hidden
 
+    def save(self, file_path: Path) -> None:
+        base_state = {"init_vars": {"hidden_dim": self.hidden_dim}}
+        state_dict = self.state_dict(destination=base_state)
+        torch.save(state_dict, file_path)
+
+    @classmethod
+    def load(cls, file_path: Path) -> "UnemploymentLstm":
+        state_dict = torch.load(file_path)  # type: Dict[str, Any]
+        init_vars = state_dict.pop("init_vars")  # don't ask.
+        loaded_model = cls(**init_vars)
+        loaded_model.load_state_dict(state_dict)
+        loaded_model.eval()
+        return loaded_model
+
 
 if __name__ == "__main__":
-    my_lstm = UnemploymentLstm(hidden_dim=16)
+    my_lstm = UnemploymentLstm(hidden_dim=8)
+    model_save_path = Path(__file__).parent / "lstm.pt"
+    my_lstm.save(model_save_path)
+    other_lstm = UnemploymentLstm.load(model_save_path)
+
     inputs = [torch.tensor([i / 10.0]) for i in range(9)]
     lstm_inputs = torch.cat(inputs).view(len(inputs), 1, -1)
-    result2 = my_lstm(lstm_inputs)
+    result2 = other_lstm(lstm_inputs)
