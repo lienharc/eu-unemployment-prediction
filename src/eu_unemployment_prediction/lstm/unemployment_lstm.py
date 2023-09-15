@@ -43,7 +43,7 @@ class UnemploymentLstm(nn.Module):
     @classmethod
     def load(cls, file_path: Path) -> "UnemploymentLstm":
         state_dict = torch.load(file_path)  # type: Dict[str, Any]
-        init_vars = state_dict.pop("init_vars")  # don't ask.
+        init_vars = state_dict.pop("init_vars")
         loaded_model = cls(**init_vars)
         loaded_model.load_state_dict(state_dict)
         loaded_model.eval()
@@ -51,11 +51,9 @@ class UnemploymentLstm(nn.Module):
 
 
 if __name__ == "__main__":
-    my_lstm = UnemploymentLstm(hidden_dim=8)
-    model_save_path = Path(__file__).parent / "lstm.pt"
-    my_lstm.save(model_save_path)
-    other_lstm = UnemploymentLstm.load(model_save_path)
+    pretrained_model_path = Path(__file__).parent.parent.parent.parent / "model" / "lstm" / "unemployment_lstm.pt"
+    lstm = UnemploymentLstm.load(pretrained_model_path)
 
     inputs = [torch.tensor([i / 10.0]) for i in range(9)]
     lstm_inputs = torch.cat(inputs).view(len(inputs), 1, -1)
-    result2 = other_lstm(lstm_inputs)
+    result = lstm(lstm_inputs)
