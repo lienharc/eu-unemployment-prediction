@@ -46,10 +46,15 @@ Given a time series of the unemployment rate the LSTM is trained to predict the 
 In a first step we only train it with recent unemployment rates and will look into pouring more macroeconomic data into the model in later stages.
 We do not expect good predictions but the LSTM should be able to learn some form of correlation lengths similar to the gaussian process above.
 
-The following figure shows the output of the LSTM model trained on the whole time series. 
+The following figure shows the output of the LSTM model (hidden state dimension: 32) trained on the time series up to 2022-01-01. 
+
 ![lstm_unemployment](img/lstm_unemployment.png)
 
+Predictions about the "future" after 2022-01-01 are very wrong (again, as expected),
+however, some sort of correlation length was learned and is used in the regime
+where the model has not been trained on.
 
+The model is very good at fitting the data it was trained on.
 
 ## Contributing
 
