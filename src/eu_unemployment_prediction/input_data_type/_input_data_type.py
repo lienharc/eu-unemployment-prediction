@@ -59,7 +59,7 @@ class InputDataType(Enum):
         "labour productivity",
         load_data_quarterly_index,
     )
-    MONETARY_AGGREGATE_M3 = (
+    MONETARY_AGGREGATE_M3 = InputDataTypeDefinition(
         "monetary_aggregate_m3",
         "m3",
         load_data_named_month_index,
@@ -77,14 +77,14 @@ class InputDataType(Enum):
 
     @property
     def column_name(self) -> str:
-        return self.value.column_name  # type: ignore
+        return self.value.column_name
 
     @property
     def normalized_column_name(self) -> str:
         return self.column_name + " norm"
 
     def load(self, data_dir: Path, file_name: str) -> pd.Series[float]:
-        return self.value.data_loader(data_dir, file_name, self.column_name)  # type: ignore
+        return self.value.data_loader(data_dir, file_name, self.column_name)
 
     def load_default(self, data_dir: Path) -> pd.Series[float]:
         return self.load(data_dir, self.value.file_base_name + ".csv")
