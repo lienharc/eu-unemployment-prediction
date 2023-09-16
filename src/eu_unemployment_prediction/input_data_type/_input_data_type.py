@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Callable, List
+from typing import List
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -19,25 +18,13 @@ from eu_unemployment_prediction.data_loading import (
     load_data_yearly_index,
 )
 from eu_unemployment_prediction.date_conversion_helper import convert_timestamp_index_to_float
+from eu_unemployment_prediction.input_data_type import InputDataTypeDefinition
 
 sns.set_theme(style="whitegrid")
 
 
-def _not_implemented_yet(x: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
-    raise NotImplementedError("Conversion function hasn't been implemented for this input data type")
-
-
 def _normalize_percentage_rate(x: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
     return x / 100.0
-
-
-@dataclass
-class InputDataTypeDefinition:
-    file_base_name: str
-    column_name: str
-    data_loader: Callable[[Path, str, str], pd.Series[float]]
-    normalizer: Callable[[npt.NDArray[np.float32]], npt.NDArray[np.float32]] = _not_implemented_yet
-    interpolation_method: str = "cubic"
 
 
 class InputDataType(Enum):
