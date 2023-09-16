@@ -18,7 +18,8 @@ from eu_unemployment_prediction.data_loading import (
     load_data_yearly_index,
 )
 from eu_unemployment_prediction.date_conversion_helper import convert_timestamp_index_to_float
-from eu_unemployment_prediction.input_data_type import InputDataTypeDefinition
+from eu_unemployment_prediction.input_data_type._data_periodicity import DataPeriodicity
+from eu_unemployment_prediction.input_data_type._input_data_type_definition import InputDataTypeDefinition
 
 sns.set_theme(style="whitegrid")
 
@@ -32,47 +33,56 @@ class InputDataType(Enum):
         "unemployment_seasonadjusted",
         "unemployment rate",
         load_data_named_month_index,
+        DataPeriodicity.MONTHLY,
         _normalize_percentage_rate,
     )
     DOLLAR_EURO_EXCHANGE_RATE = InputDataTypeDefinition(
         "dollar_euro_exchange_rate",
         "exchange rate",
         load_data_valid_date,
+        DataPeriodicity.DAILY,
     )
     GDP = InputDataTypeDefinition(
         "gdp_at_market_price",
         "gdp at market price",
         load_data_quarterly_index,
+        DataPeriodicity.QUARTERLY,
     )
     GOV_DEBT = InputDataTypeDefinition(
         "government_debt",
         "government debt",
         load_data_quarterly_index,
+        DataPeriodicity.QUARTERLY,
     )
     INFLATION_RATE = InputDataTypeDefinition(
         "inflation_rate",
         "inflation rate",
         load_data_named_month_index,
+        DataPeriodicity.MONTHLY,
     )
     LABOUR_PRODUCTIVITY = InputDataTypeDefinition(
         "labour_productivity",
         "labour productivity",
         load_data_quarterly_index,
+        DataPeriodicity.QUARTERLY,
     )
     MONETARY_AGGREGATE_M3 = InputDataTypeDefinition(
         "monetary_aggregate_m3",
         "m3",
         load_data_named_month_index,
+        DataPeriodicity.MONTHLY,
     )
     POPULATION = InputDataTypeDefinition(
         "population",
         "population",
         load_data_yearly_index,
+        DataPeriodicity.YEARLY,
     )
     LABOUR_COSTS = InputDataTypeDefinition(
         "unit_labour_costs",
         "labour costs",
         load_data_quarterly_index,
+        DataPeriodicity.QUARTERLY,
     )
 
     @property
