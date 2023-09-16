@@ -19,6 +19,10 @@ class UnemploymentLstm(nn.Module):
     def hidden_dim(self) -> int:
         return self._hidden_dim
 
+    @property
+    def input_dim(self) -> int:
+        return self._input_dim
+
     @overload
     def forward(self, x: Tensor) -> Tensor:
         ...
@@ -38,7 +42,7 @@ class UnemploymentLstm(nn.Module):
         return result, new_hidden
 
     def save(self, file_path: Path) -> None:
-        base_state = {"init_vars": {"hidden_dim": self.hidden_dim, "input_dim": self._input_dim}}
+        base_state = {"init_vars": {"hidden_dim": self._hidden_dim, "input_dim": self._input_dim}}
         state_dict = self.state_dict(destination=base_state)
         torch.save(state_dict, file_path)
 

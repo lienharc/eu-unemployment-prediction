@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Tuple, Generator, Optional, Callable
+from typing import Tuple, Generator, Optional, Callable, List
 
 import numpy as np
 import numpy.typing as npt
@@ -21,6 +21,7 @@ class UnemploymentLstmTrainer:
         self,
         lstm: UnemploymentLstm,
         input_data: pd.DataFrame,
+        input_features: Optional[List[InputDataType]] = None,
         test_data_masker: Optional[Callable[[pd.DatetimeIndex], npt.NDArray[np.bool_]]] = None,
         learning_rate: float = 0.001,
         chunk_size: int = 40,
@@ -30,6 +31,8 @@ class UnemploymentLstmTrainer:
         :param input_data: A data frame containing the raw input data for training.
             It should have the same structure as the one provided by
             :func:`~InputDataType.UNEMPLOYMENT.load_with_normalized_column`
+        :param input_features: List of features that should be considedered for the LSTM model.
+            Default: only unemployment
         :param test_data_masker: A function which returns a numpy array specifying which data points of the input_data
             should be used for testing the trained model.
             These data points are not used for training.
@@ -39,11 +42,17 @@ class UnemploymentLstmTrainer:
             >>> test_data_masker = lambda index: index > "2020-01-01"
 
             Default: All data points are considered for training, none for testing.
+        :param learning_rate: The learning rate during training
+        :param chunk_size: The size of the chunks of the time series in between which the optimization is happening.
         """
         self._model = lstm
         # todo: consider checking input_data properly (columns "float time", "unemployment rate",
         # todo: "unemployment rate norm"
         self._raw_data = input_data
+        self._input_features = input_features if input_features is not None else [InputDataType.UNEMPLOYMENT]
+
+        self._consistency_check()
+
         if test_data_masker is not None:
             self._test_data_mask = test_data_masker(self._raw_data.index)  # type: ignore
         else:
@@ -144,6 +153,21 @@ class UnemploymentLstmTrainer:
             [trained_out.numpy().flatten(), np.array(predictions).flatten()]
         )  # type: npt.NDArray[np.float32]
         return full_prediction * 100.0
+
+    def _consistency_check(self) -> None:
+        if InputDataType.UNEMPLOYMENT not in self._input_features:
+            raise ValueError("input_features needs to include the 'UNEMPLOYMENT' feature")
+        if len(self._input_features) != self._model.input_dim:
+            raise ValueError(
+                f"The model's input_dim ({self._model.input_dim}) needs to be the same as "
+                f"the length of input_features ({len(self._input_features)}). But it isn't."
+            )
+        for data_type in self._input_features:
+            if data_type.normalized_column_name not in self._raw_data.columns:
+                raise ValueError(
+                    f'Expected a column named "{data_type.normalized_column_name}" in the input_data.'
+                    f"Existing column names: {self._raw_data.columns}"
+                )
 
 
 if __name__ == "__main__":

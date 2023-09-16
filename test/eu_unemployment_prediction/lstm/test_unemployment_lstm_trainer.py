@@ -1,13 +1,47 @@
 from pathlib import Path
-from typing import Callable
-import numpy as np
-import numpy.typing as npt
-import pandas as pd
 
 import numpy as np
+import pytest
 
 from eu_unemployment_prediction.input_data_type import InputDataType
 from eu_unemployment_prediction.lstm import UnemploymentLstmTrainer, UnemploymentLstm
+
+
+def test_constructor_raises_if_unemployment_not_a_feature(data_dir: Path) -> None:
+    input_data = InputDataType.UNEMPLOYMENT.load_with_normalized_column(data_dir)
+
+    with pytest.raises(ValueError) as exc_info:
+        UnemploymentLstmTrainer(UnemploymentLstm(2), input_data, input_features=[])
+
+    assert "input_features" in str(exc_info.value)
+    assert "UNEMPLOYMENT" in str(exc_info.value)
+
+
+def test_constructor_raises_if_input_dim_not_equal_to_number_of_features(data_dir: Path) -> None:
+    input_data = InputDataType.UNEMPLOYMENT.load_with_normalized_column(data_dir)
+
+    with pytest.raises(ValueError) as exc_info:
+        UnemploymentLstmTrainer(
+            UnemploymentLstm(2, input_dim=3),
+            input_data,
+            input_features=[InputDataType.UNEMPLOYMENT, InputDataType.GOV_DEBT],
+        )
+
+    assert "model's input_dim" in str(exc_info.value)
+    assert "length of input_features" in str(exc_info.value)
+
+
+def test_constructor_raises_if_data_frame_is_missing_the_right_columns(data_dir: Path) -> None:
+    input_data = InputDataType.UNEMPLOYMENT.load_with_normalized_column(data_dir)
+
+    with pytest.raises(ValueError) as exc_info:
+        UnemploymentLstmTrainer(
+            UnemploymentLstm(2, input_dim=2),
+            input_data,
+            input_features=[InputDataType.UNEMPLOYMENT, InputDataType.GOV_DEBT],
+        )
+
+    assert f'Expected a column named "{InputDataType.GOV_DEBT.normalized_column_name}"' in str(exc_info.value)
 
 
 def test_chunk_generator(data_dir: Path) -> None:
