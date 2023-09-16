@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Callable
+from typing import Callable, List
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -30,93 +31,86 @@ def _normalize_percentage_rate(x: npt.NDArray[np.float32]) -> npt.NDArray[np.flo
     return x / 100.0
 
 
+@dataclass
+class InputDataTypeDefinition:
+    file_base_name: str
+    column_name: str
+    data_loader: Callable[[Path, str, str], pd.Series[float]]
+    normalizer: Callable[[npt.NDArray[np.float32]], npt.NDArray[np.float32]] = _not_implemented_yet
+    interpolation_method: str = "cubic"
+
+
 class InputDataType(Enum):
-    UNEMPLOYMENT = (
+    UNEMPLOYMENT = InputDataTypeDefinition(
         "unemployment_seasonadjusted",
         "unemployment rate",
         load_data_named_month_index,
         _normalize_percentage_rate,
     )
-    DOLLAR_EURO_EXCHANGE_RATE = (
+    DOLLAR_EURO_EXCHANGE_RATE = InputDataTypeDefinition(
         "dollar_euro_exchange_rate",
         "exchange rate",
         load_data_valid_date,
-        _not_implemented_yet,
     )
-    GDP = (
+    GDP = InputDataTypeDefinition(
         "gdp_at_market_price",
         "gdp at market price",
         load_data_quarterly_index,
-        _not_implemented_yet,
     )
-    GOV_DEBT = (
+    GOV_DEBT = InputDataTypeDefinition(
         "government_debt",
         "government debt",
         load_data_quarterly_index,
-        _not_implemented_yet,
     )
-    INFLATION_RATE = (
+    INFLATION_RATE = InputDataTypeDefinition(
         "inflation_rate",
         "inflation rate",
         load_data_named_month_index,
-        _not_implemented_yet,
     )
-    LABOUR_PRODUCTIVITY = (
+    LABOUR_PRODUCTIVITY = InputDataTypeDefinition(
         "labour_productivity",
         "labour productivity",
         load_data_quarterly_index,
-        _not_implemented_yet,
     )
     MONETARY_AGGREGATE_M3 = (
         "monetary_aggregate_m3",
         "m3",
         load_data_named_month_index,
-        _not_implemented_yet,
     )
-    POPULATION = (
+    POPULATION = InputDataTypeDefinition(
         "population",
         "population",
         load_data_yearly_index,
-        _not_implemented_yet,
     )
-    LABOUR_COSTS = (
+    LABOUR_COSTS = InputDataTypeDefinition(
         "unit_labour_costs",
         "labour costs",
         load_data_quarterly_index,
-        _not_implemented_yet,
     )
 
     @property
-    def file_base_name(self) -> str:
-        return self.value[0]
-
-    @property
     def column_name(self) -> str:
-        return self.value[1]
-
-    @property
-    def normalize_function(self) -> Callable[[npt.NDArray[np.float32]], npt.NDArray[np.float32]]:
-        return self.value[3]
+        return self.value.column_name  # type: ignore
 
     @property
     def normalized_column_name(self) -> str:
         return self.column_name + " norm"
 
     def load(self, data_dir: Path, file_name: str) -> pd.Series[float]:
-        return self.value[2](data_dir, file_name, self.column_name)
+        return self.value.data_loader(data_dir, file_name, self.column_name)  # type: ignore
 
-    def load_default(self, data_dir: Path) -> pd.Series:
-        return self.load(data_dir, self.file_base_name + ".csv")
+    def load_default(self, data_dir: Path) -> pd.Series[float]:
+        return self.load(data_dir, self.value.file_base_name + ".csv")
 
     def plot(self, data_dir: Path, img_dir: Path) -> None:
         sns.lineplot(data=self.load_default(data_dir), palette=muted, linewidth=1.5)
-        plt.savefig(img_dir / (self.file_base_name + ".png"), dpi=500)
+        plt.savefig(img_dir / (self.value.file_base_name + ".png"), dpi=500)
         plt.clf()
 
     def load_with_normalized_column(self, data_dir: Path) -> pd.DataFrame:
         data_frame = self.load_default(data_dir).to_frame()
         new_column = data_frame.loc[:, self.column_name].to_numpy(dtype=np.float32)
-        data_frame[self.normalized_column_name] = self.normalize_function(new_column)
+        data_frame[self.normalized_column_name] = self.value.normalizer(new_column)
         data_frame.insert(0, "float time", convert_timestamp_index_to_float(data_frame.index))
         return data_frame
 
