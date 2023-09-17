@@ -71,8 +71,8 @@ def test_no_test_data_masker(data_dir: Path) -> None:
 
 
 def test_data_masker_works(data_dir: Path) -> None:
-    test_data_masker = lambda index: index < "2000-04-10"
-    expected_test_data_size = 4  # ECB data starts at 2000-01-01
+    test_data_masker = lambda index: index <= "2000-04-30"
+    expected_test_data_size = 4  # ECB data starts at 2000-01-31
     input_data = InputDataType.UNEMPLOYMENT.load_with_normalized_column(data_dir)
     trainer = UnemploymentLstmTrainer(UnemploymentLstm(8), input_data, test_data_masker=test_data_masker)
 

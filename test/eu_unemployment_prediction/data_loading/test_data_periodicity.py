@@ -23,7 +23,7 @@ def test_daily_date_range() -> None:
 
 
 def test_monthly_date_range() -> None:
-    expected_date_range = [f"2020-0{i}-01" for i in range(1, 10)]
+    expected_date_range = ["2018-09-30", "2018-10-31", "2018-11-30", "2018-12-31", "2019-01-31"]
     date_range = DataPeriodicity.MONTHLY.date_range(expected_date_range[0], expected_date_range[-1])
 
     np.testing.assert_equal(date_range.to_numpy(), np.array(expected_date_range, dtype=np.datetime64))
@@ -37,7 +37,7 @@ def test_quarterly_date_range() -> None:
 
 
 def test_yearly_date_range() -> None:
-    expected_date_range = [f"200{i}-01-01" for i in range(1, 10)]
+    expected_date_range = [f"200{i}-12-31" for i in range(1, 10)]
     date_range = DataPeriodicity.YEARLY.date_range(expected_date_range[0], expected_date_range[-1])
 
     np.testing.assert_equal(date_range.to_numpy(), np.array(expected_date_range, dtype=np.datetime64))
