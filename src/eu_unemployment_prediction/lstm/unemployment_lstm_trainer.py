@@ -46,8 +46,6 @@ class UnemploymentLstmTrainer:
         :param chunk_size: The size of the chunks of the time series in between which the optimization is happening.
         """
         self._model = lstm
-        # todo: consider checking input_data properly (columns "float time", "unemployment rate",
-        # todo: "unemployment rate norm"
         self._raw_data = input_data
         self._input_features = input_features if input_features is not None else [InputDataType.UNEMPLOYMENT]
 
