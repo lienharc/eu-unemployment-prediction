@@ -96,6 +96,10 @@ class InputDataType(Enum):
     )
 
     @property
+    def file_base_name(self) -> str:
+        return self.value.file_base_name
+
+    @property
     def column_name(self) -> str:
         return self.value.column_name
 
