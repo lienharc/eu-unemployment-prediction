@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Tuple, Generator, Optional, Callable
+from typing import Tuple, Generator, Optional, Callable, List
 
 import numpy as np
 import numpy.typing as npt
@@ -11,7 +11,7 @@ from matplotlib import pyplot as plt
 from torch import nn, Tensor
 
 from eu_unemployment_prediction.input_data_type import InputDataType
-from eu_unemployment_prediction.lstm import UnemploymentLstm
+from eu_unemployment_prediction.lstm import UnemploymentLstm, DataLoader
 
 
 class UnemploymentLstmTrainer:
@@ -187,7 +187,7 @@ if __name__ == "__main__":
     lstm_model = UnemploymentLstm(64, input_features=input_types)
     # lstm_model = UnemploymentLstm.load(model_path)
 
-    data = InputDataType.load_normalized_interpolated(input_types, data_dir)
+    data = DataLoader(data_dir, input_types).data_frame
 
     def data_masker(index: pd.DatetimeIndex) -> npt.NDArray[np.bool_]:
         return index > "2023-03-01"  # type: ignore

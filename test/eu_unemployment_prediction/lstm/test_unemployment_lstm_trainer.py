@@ -1,28 +1,31 @@
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 import pytest
 
 from eu_unemployment_prediction.input_data_type import InputDataType
-from eu_unemployment_prediction.lstm import UnemploymentLstmTrainer, UnemploymentLstm
+from eu_unemployment_prediction.lstm import UnemploymentLstmTrainer, UnemploymentLstm, DataLoader
 
 
-def test_constructor_raises_if_data_frame_is_missing_the_right_columns(data_dir: Path) -> None:
-    input_data = InputDataType.UNEMPLOYMENT.load_with_normalized_column(data_dir)
+@pytest.fixture
+def unemployment_data(data_dir: Path) -> pd.DataFrame:
+    return DataLoader(data_dir, [InputDataType.UNEMPLOYMENT]).data_frame
 
+
+def test_constructor_raises_if_data_frame_is_missing_the_right_columns(unemployment_data: pd.DataFrame) -> None:
     with pytest.raises(ValueError) as exc_info:
         UnemploymentLstmTrainer(
             UnemploymentLstm(2, input_features=[InputDataType.UNEMPLOYMENT, InputDataType.GOV_DEBT]),
-            input_data,
+            unemployment_data,
         )
 
     assert f'Expected a column named "{InputDataType.GOV_DEBT.normalized_column_name}"' in str(exc_info.value)
 
 
-def test_chunk_generator(data_dir: Path) -> None:
+def test_chunk_generator(unemployment_data: pd.DataFrame) -> None:
     chunk_size = 50
-    input_data = InputDataType.UNEMPLOYMENT.load_with_normalized_column(data_dir)
-    trainer = UnemploymentLstmTrainer(UnemploymentLstm(8), input_data, chunk_size=chunk_size)
+    trainer = UnemploymentLstmTrainer(UnemploymentLstm(8), unemployment_data, chunk_size=chunk_size)
 
     chunks = list(trainer._generate_chunks())
 
@@ -37,19 +40,17 @@ def test_chunk_generator(data_dir: Path) -> None:
     assert first_element_in_second_train_chunk == last_element_in_first_target_chunk
 
 
-def test_no_test_data_masker(data_dir: Path) -> None:
-    input_data = InputDataType.UNEMPLOYMENT.load_with_normalized_column(data_dir)
-    trainer = UnemploymentLstmTrainer(UnemploymentLstm(8), input_data)
+def test_no_test_data_masker(unemployment_data: pd.DataFrame) -> None:
+    trainer = UnemploymentLstmTrainer(UnemploymentLstm(8), unemployment_data)
 
-    assert trainer.train_data.shape[0] == input_data.shape[0]
+    assert trainer.train_data.shape[0] == unemployment_data.shape[0]
     assert trainer.test_data.shape[0] == 0
 
 
-def test_data_masker_works(data_dir: Path) -> None:
+def test_data_masker_works(unemployment_data: pd.DataFrame) -> None:
     test_data_masker = lambda index: index <= "2000-04-30"
     expected_test_data_size = 4  # ECB data starts at 2000-01-31
-    input_data = InputDataType.UNEMPLOYMENT.load_with_normalized_column(data_dir)
-    trainer = UnemploymentLstmTrainer(UnemploymentLstm(8), input_data, test_data_masker=test_data_masker)
+    trainer = UnemploymentLstmTrainer(UnemploymentLstm(8), unemployment_data, test_data_masker=test_data_masker)
 
-    assert trainer.train_data.shape[0] == input_data.shape[0] - expected_test_data_size
+    assert trainer.train_data.shape[0] == unemployment_data.shape[0] - expected_test_data_size
     assert trainer.test_data.shape[0] == expected_test_data_size
