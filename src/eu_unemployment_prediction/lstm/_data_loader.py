@@ -78,15 +78,17 @@ class DataLoader:
             self._reindex_interpolated(data_type, new_index) for data_type, loaded_data in self._raw_data.items()
         ]
         self._data = pd.concat(new_index_dfs, axis=1)
+        self._data.index.name = "date"
         self._add_float_time()
         self._add_type_labels()
         return new_index
 
     def chunks(self, chunk_size: int) -> Generator[Tuple[Tensor, Tensor], None, None]:
         """Generates chunks of (training_data, target_data) tuples in the right shape"""
-        feature_columns = [data_type.normalized_column_name for data_type in self.data_types]
-        input_data = self.train.iloc[:-1].loc[:, feature_columns]  # type: pd.DataFrame
-        target_data = self.train.iloc[1:].loc[:, feature_columns]  # type: pd.DataFrame
+        columns = [data_type.normalized_column_name for data_type in self.data_types]
+        columns.append(self.FLOAT_DATE_NAME)
+        input_data = self.train.iloc[:-1].loc[:, columns]  # type: pd.DataFrame
+        target_data = self.train.iloc[1:].loc[:, columns]  # type: pd.DataFrame
         for start_index in range(0, self.train.shape[0], chunk_size):
             stop_index = start_index + chunk_size
             input_chunk = torch.tensor(input_data.iloc[start_index:stop_index].to_numpy())

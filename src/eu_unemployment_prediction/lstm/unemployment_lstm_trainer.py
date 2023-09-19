@@ -98,8 +98,9 @@ class UnemploymentLstmTrainer:
 
     def _predict_future(self) -> npt.NDArray[np.float32]:
         hidden, cell = (torch.zeros(1, 1, self._model.hidden_dim), torch.zeros(1, 1, self._model.hidden_dim))
-        feature_columns = [input_feature.normalized_column_name for input_feature in self._model.input_features]
-        testi = self._data.train.loc[:, feature_columns].to_numpy()
+        columns = [input_feature.normalized_column_name for input_feature in self._model.input_features]
+        columns.append(self._data.FLOAT_DATE_NAME)
+        testi = self._data.train.loc[:, columns].to_numpy()
         trained_input = torch.tensor(testi).view(self._data.train.shape[0], 1, -1)
         predictions = []
         with torch.no_grad():
@@ -134,8 +135,8 @@ if __name__ == "__main__":
     file_name_prefix = "_".join(data_type.file_base_name for data_type in input_types)
     model_path = project_dir / "model" / "lstm" / f"{file_name_prefix}_lstm.pt"
 
-    lstm_model = UnemploymentLstm(64, input_features=input_types)
-    # lstm_model = UnemploymentLstm.load(model_path)
+    # lstm_model = UnemploymentLstm(64, input_features=input_types)
+    lstm_model = UnemploymentLstm.load(model_path)
 
     def data_masker(index: pd.DatetimeIndex) -> npt.NDArray[np.bool_]:
         return index > "2023-03-01"  # type: ignore
@@ -147,7 +148,7 @@ if __name__ == "__main__":
         learning_rate=0.001,
         chunk_size=100,
     )
-    trainer.run(epochs=5000)
+    trainer.run(epochs=10000)
 
     trainer.model.save(model_path)
     for input_type in input_types:

@@ -13,7 +13,7 @@ class UnemploymentLstm(nn.Module):
         super().__init__()
         self._hidden_dim = hidden_dim
         self._input_features = self._parse_input_features(input_features)
-        self._input_dim = len(self._input_features)
+        self._input_dim = len(self._input_features) + 1
         self._lstm = nn.LSTM(input_size=self._input_dim, hidden_size=self._hidden_dim)  # type: ignore
         self._output_layer = nn.Linear(in_features=self._hidden_dim, out_features=self._input_dim, bias=True)
 
@@ -26,7 +26,7 @@ class UnemploymentLstm(nn.Module):
         return self._input_features
 
     @property
-    def input_dim(self):
+    def input_dim(self) -> int:
         return self._input_dim
 
     @overload
