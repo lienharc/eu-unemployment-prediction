@@ -84,7 +84,7 @@ class UnemploymentLstmTrainer:
                         f"Epoch {epoch:03d}/{epochs} | No training happened in this epoch. No training data?"
                     )
                 if epoch % 50 == 0:
-                    self._LOGGER.info(f"Epoch {epoch:03d}/{epochs} | loss: {loss}")
+                    self._LOGGER.info(f"Epoch {epoch:03d}/{epochs} | loss: {loss:.3e}")
         except KeyboardInterrupt:
             self._LOGGER.warning(f"Learning process interrupted by user at epoch {epoch}/{epochs}")
 
@@ -190,12 +190,12 @@ if __name__ == "__main__":
     project_dir = Path(__file__).parent.parent.parent.parent
     data_dir = project_dir / "data"
     img_dir = project_dir / "img"
-    input_types = [InputDataType.UNEMPLOYMENT, InputDataType.KEY_INTEREST_RATE]
+    input_types = [InputDataType.UNEMPLOYMENT, InputDataType.EURO_STOXX_50, InputDataType.KEY_INTEREST_RATE]
     file_name_prefix = "_".join(data_type.file_base_name for data_type in input_types)
     model_path = project_dir / "model" / "lstm" / f"{file_name_prefix}_lstm.pt"
 
-    lstm_model = UnemploymentLstm(64, input_dim=len(input_types))
-    # lstm_model = UnemploymentLstm.load(model_path)
+    # lstm_model = UnemploymentLstm(64, input_dim=len(input_types))
+    lstm_model = UnemploymentLstm.load(model_path)
 
     data = InputDataType.load_normalized_interpolated(input_types, data_dir)
 
@@ -207,10 +207,10 @@ if __name__ == "__main__":
         data,
         input_features=input_types,
         test_data_masker=data_masker,
-        learning_rate=0.001,
+        learning_rate=0.00001,
         chunk_size=100,
     )
-    trainer.run(epochs=5000)
+    trainer.run(epochs=20000)
 
     trainer.model.save(model_path)
     for input_type in input_types:
