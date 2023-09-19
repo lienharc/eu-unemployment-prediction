@@ -18,6 +18,17 @@ def test_load_unemployment_data(data_dir: Path) -> None:
     assert output_df.shape == (283,)
 
 
+def test_load_key_interest_rate(data_dir: Path) -> None:
+    output_df = InputDataType.KEY_INTEREST_RATE.load_default(data_dir)
+
+    assert type(output_df) == pd.Series
+    assert output_df.index[-1] == Timestamp.fromisoformat("2023-09-20T00:00")
+    assert output_df[-1] == 4.75
+    assert output_df.index[0] == Timestamp.fromisoformat("1999-01-01T00:00")
+    assert output_df[0] == 4.5
+    assert output_df.shape == (59,)
+
+
 def test_load_dollar_euro_exchange_rate(data_dir: Path) -> None:
     output_df = InputDataType.DOLLAR_EURO_EXCHANGE_RATE.load_default(data_dir)
 

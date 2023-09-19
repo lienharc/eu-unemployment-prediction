@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from enum import Enum
 from pathlib import Path
-from typing import List, Dict, Optional
+from typing import List, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -36,6 +36,14 @@ class InputDataType(Enum):
         load_data_named_month_index,
         DataPeriodicity.MONTHLY,
         _normalize_percentage_rate,
+    )
+    KEY_INTEREST_RATE = InputDataTypeDefinition(
+        "key_interest_rate",
+        "key interest rate",
+        load_data_valid_date,
+        None,
+        _normalize_percentage_rate,
+        interpolation_method="pad",
     )
     DOLLAR_EURO_EXCHANGE_RATE = InputDataTypeDefinition(
         "dollar_euro_exchange_rate",
@@ -96,7 +104,7 @@ class InputDataType(Enum):
         return self.column_name + " norm"
 
     @property
-    def periodicity(self) -> DataPeriodicity:
+    def periodicity(self) -> Optional[DataPeriodicity]:
         return self.value.periodicity
 
     def load(self, data_dir: Path, file_name: str) -> pd.Series[float]:
@@ -132,7 +140,7 @@ class InputDataType(Enum):
         data_types: List[InputDataType], data_dir: Path, periodicity: Optional[DataPeriodicity] = None
     ) -> pd.DataFrame:
         if periodicity is None:
-            periodicity = min(data_type.periodicity for data_type in data_types)
+            periodicity = min(data_type.periodicity for data_type in data_types if data_type.periodicity is not None)
         loaded_data_frames = {data_type: data_type.load_with_normalized_column(data_dir) for data_type in data_types}
         new_index = InputDataType._get_new_index(list(loaded_data_frames.values()), periodicity)
         new_index_dfs = [
@@ -152,7 +160,7 @@ class InputDataType(Enum):
 
 
 if __name__ == "__main__":
-    project_dir = Path(__file__).parent.parent.parent
+    project_dir = Path(__file__).parent.parent.parent.parent
     project_data_dir = project_dir / "data"
     project_img_dir = project_dir / "img"
     InputDataType.plot_all(project_data_dir, project_img_dir)
