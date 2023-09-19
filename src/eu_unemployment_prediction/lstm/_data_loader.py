@@ -1,8 +1,9 @@
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Callable
 
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 
 from eu_unemployment_prediction.input_data_type import InputDataType, DataPeriodicity
@@ -14,6 +15,7 @@ class DataLoader:
     data_dir: Path
     data_types: List[InputDataType]
     periodicity: Optional[DataPeriodicity] = None
+    test_data_mask: Optional[Callable[[pd.DatetimeIndex], npt.NDArray[np.bool_]]] = None
     _raw_data: Dict[InputDataType, pd.DataFrame] = field(init=False)
     _data: pd.DataFrame = field(init=False)
 
@@ -26,8 +28,16 @@ class DataLoader:
         self.apply_new_index(self.periodicity)
 
     @property
-    def data_frame(self) -> pd.DataFrame:
+    def full(self) -> pd.DataFrame:
         return self._data
+
+    @property
+    def train(self) -> pd.DataFrame:
+        return self._data[self._data["type"] == "train"]
+
+    @property
+    def test(self) -> pd.DataFrame:
+        return self._data[self._data["type"] == "test"]
 
     def apply_new_index(self, periodicity: DataPeriodicity) -> pd.DatetimeIndex:
         start_date = max(min(data_frame.index) for data_frame in self._raw_data.values())
@@ -38,6 +48,7 @@ class DataLoader:
         ]
         self._data = pd.concat(new_index_dfs, axis=1)
         self._add_float_time()
+        self._add_type_labels()
         return new_index
 
     def _load_with_normalized_column(self, feature: InputDataType) -> pd.DataFrame:
@@ -54,3 +65,9 @@ class DataLoader:
 
     def _add_float_time(self) -> None:
         self._data[self.FLOAT_DATE_NAME] = self._data.index.astype(int).to_numpy(dtype=np.float32) * 1.0e-19
+
+    def _add_type_labels(self) -> None:
+        self._data["type"] = "train"
+        if self.test_data_mask is not None:
+            mask = self.test_data_mask(self._data.index)  # type: ignore
+            self._data.loc[mask, "type"] = "test"

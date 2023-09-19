@@ -10,7 +10,7 @@ from eu_unemployment_prediction.lstm import UnemploymentLstmTrainer, Unemploymen
 
 @pytest.fixture
 def unemployment_data(data_dir: Path) -> pd.DataFrame:
-    return DataLoader(data_dir, [InputDataType.UNEMPLOYMENT]).data_frame
+    return DataLoader(data_dir, [InputDataType.UNEMPLOYMENT]).full
 
 
 def test_constructor_raises_if_data_frame_is_missing_the_right_columns(unemployment_data: pd.DataFrame) -> None:

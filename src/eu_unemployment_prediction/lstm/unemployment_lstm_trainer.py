@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Tuple, Generator, Optional, Callable, List
+from typing import Tuple, Generator, Optional, Callable
 
 import numpy as np
 import numpy.typing as npt
@@ -187,7 +187,7 @@ if __name__ == "__main__":
     lstm_model = UnemploymentLstm(64, input_features=input_types)
     # lstm_model = UnemploymentLstm.load(model_path)
 
-    data = DataLoader(data_dir, input_types).data_frame
+    data = DataLoader(data_dir, input_types).full
 
     def data_masker(index: pd.DatetimeIndex) -> npt.NDArray[np.bool_]:
         return index > "2023-03-01"  # type: ignore
