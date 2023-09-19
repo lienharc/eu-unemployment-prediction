@@ -162,8 +162,10 @@ class UnemploymentLstmTrainer:
                 prediction, (hidden, cell) = self._model(prediction.view(1, 1, self._model.input_dim), (hidden, cell))
                 predictions.append(prediction.view(self._model.input_dim).numpy())
         full_prediction = np.concatenate([trained_out.numpy(), np.array(predictions)])  # type: npt.NDArray[np.float32]
-        # todo: use generic "unormalize" function
-        return full_prediction * 100.0
+
+        for index, feature in enumerate(self._input_features):
+            full_prediction[:, index] = feature.value.denormalizer(full_prediction[:, index])
+        return full_prediction
 
     def _consistency_check(self) -> None:
         if InputDataType.UNEMPLOYMENT not in self._input_features:
@@ -191,8 +193,8 @@ if __name__ == "__main__":
     file_name_prefix = "_".join(data_type.file_base_name for data_type in input_types)
     model_path = project_dir / "model" / "lstm" / f"{file_name_prefix}_lstm.pt"
 
-    # lstm_model = UnemploymentLstm(64, input_dim=len(input_types))
-    lstm_model = UnemploymentLstm.load(model_path)
+    lstm_model = UnemploymentLstm(64, input_dim=len(input_types))
+    # lstm_model = UnemploymentLstm.load(model_path)
 
     data = InputDataType.load_normalized_interpolated(input_types, data_dir)
 
@@ -204,16 +206,16 @@ if __name__ == "__main__":
         data,
         input_features=input_types,
         test_data_masker=data_masker,
-        learning_rate=0.0001,
-        chunk_size=70,
+        learning_rate=0.001,
+        chunk_size=100,
     )
     trainer.run(epochs=5000)
 
     trainer.model.save(model_path)
-    for feature in input_types:
-        trainer.plot(img_dir / f"{file_name_prefix}_lstm_{feature.file_base_name}.png", feature)
+    for input_type in input_types:
+        trainer.plot(img_dir / f"{file_name_prefix}_lstm_{input_type.file_base_name}.png", input_type)
         trainer.plot(
-            img_dir / f"{file_name_prefix}_lstm_{feature.file_base_name}_zoom.png",
-            feature,
+            img_dir / f"{file_name_prefix}_lstm_{input_type.file_base_name}_zoom.png",
+            input_type,
             plot_mask=data.index > "2022-01-01",
         )
