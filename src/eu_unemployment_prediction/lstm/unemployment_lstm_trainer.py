@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Tuple, Generator, Optional, Callable, List
+from typing import Tuple, Generator, Optional, Callable
 
 import numpy as np
 import numpy.typing as npt
@@ -21,7 +21,6 @@ class UnemploymentLstmTrainer:
         self,
         lstm: UnemploymentLstm,
         input_data: pd.DataFrame,
-        input_features: Optional[List[InputDataType]] = None,
         test_data_masker: Optional[Callable[[pd.DatetimeIndex], npt.NDArray[np.bool_]]] = None,
         learning_rate: float = 0.001,
         chunk_size: int = 40,
@@ -31,8 +30,6 @@ class UnemploymentLstmTrainer:
         :param input_data: A data frame containing the raw input data for training.
             It should have the same structure as the one provided by
             :func:`~InputDataType.UNEMPLOYMENT.load_with_normalized_column`
-        :param input_features: List of features that should be considedered for the LSTM model.
-            Default: only unemployment
         :param test_data_masker: A function which returns a numpy array specifying which data points of the input_data
             should be used for testing the trained model.
             These data points are not used for training.
@@ -47,7 +44,6 @@ class UnemploymentLstmTrainer:
         """
         self._model = lstm
         self._raw_data = input_data
-        self._input_features = input_features if input_features is not None else [InputDataType.UNEMPLOYMENT]
 
         self._consistency_check()
 
@@ -90,7 +86,7 @@ class UnemploymentLstmTrainer:
 
     def _generate_chunks(self) -> Generator[Tuple[Tensor, Tensor], None, None]:
         """Generates chunks of (training_data, target_data) tuples in the right shape"""
-        feature_columns = [input_feature.normalized_column_name for input_feature in self._input_features]
+        feature_columns = [input_feature.normalized_column_name for input_feature in self._model.input_features]
         input_data = self._train_data.iloc[:-1].loc[:, feature_columns]  # type: pd.DataFrame
         target_data = self._train_data.iloc[1:].loc[:, feature_columns]  # type: pd.DataFrame
         for start_index in range(0, self._train_data.shape[0], self._chunk_size):
@@ -120,10 +116,10 @@ class UnemploymentLstmTrainer:
         return loss
 
     def plot(self, file_path: Path, feature: InputDataType, plot_mask: Optional[npt.NDArray[np.bool_]] = None) -> None:
-        if feature not in self._input_features:
+        if feature not in self._model.input_features:
             raise ValueError(
                 f"Cannot plot results for {feature} since it is not part of the model. "
-                f"Available features: {', '.join(str(f) for f in self._input_features)}"
+                f"Available features: {', '.join(str(f) for f in self._model.input_features)}"
             )
         if plot_mask is None:
             plot_mask = np.full_like(self._raw_data.index, fill_value=True, dtype=np.bool_)
@@ -142,7 +138,7 @@ class UnemploymentLstmTrainer:
         predictions = self._predict_future()
         ax.plot(
             self._raw_data.index[1:].to_numpy()[plot_mask[1:]],
-            predictions[plot_mask[1:], self._input_features.index(feature)],
+            predictions[plot_mask[1:], self._model.input_features.index(feature)],
             c="red",
             label="LSTM out",
         )
@@ -152,7 +148,7 @@ class UnemploymentLstmTrainer:
 
     def _predict_future(self) -> npt.NDArray[np.float32]:
         hidden, cell = (torch.zeros(1, 1, self._model.hidden_dim), torch.zeros(1, 1, self._model.hidden_dim))
-        feature_columns = [input_feature.normalized_column_name for input_feature in self._input_features]
+        feature_columns = [input_feature.normalized_column_name for input_feature in self._model.input_features]
         testi = self._train_data.loc[:, feature_columns].to_numpy()
         trained_input = torch.tensor(testi).view(self._train_data.shape[0], 1, -1)
         predictions = []
@@ -164,19 +160,12 @@ class UnemploymentLstmTrainer:
                 predictions.append(prediction.view(self._model.input_dim).numpy())
         full_prediction = np.concatenate([trained_out.numpy(), np.array(predictions)])  # type: npt.NDArray[np.float32]
 
-        for index, feature in enumerate(self._input_features):
+        for index, feature in enumerate(self._model.input_features):
             full_prediction[:, index] = feature.value.denormalizer(full_prediction[:, index])
         return full_prediction
 
     def _consistency_check(self) -> None:
-        if InputDataType.UNEMPLOYMENT not in self._input_features:
-            raise ValueError("input_features needs to include the 'UNEMPLOYMENT' feature")
-        if len(self._input_features) != self._model.input_dim:
-            raise ValueError(
-                f"The model's input_dim ({self._model.input_dim}) needs to be the same as "
-                f"the length of input_features ({len(self._input_features)}). But it isn't."
-            )
-        for data_type in self._input_features:
+        for data_type in self._model.input_features:
             if data_type.normalized_column_name not in self._raw_data.columns:
                 raise ValueError(
                     f'Expected a column named "{data_type.normalized_column_name}" in the input_data.'
@@ -190,12 +179,13 @@ if __name__ == "__main__":
     project_dir = Path(__file__).parent.parent.parent.parent
     data_dir = project_dir / "data"
     img_dir = project_dir / "img"
-    input_types = [InputDataType.UNEMPLOYMENT, InputDataType.EURO_STOXX_50, InputDataType.KEY_INTEREST_RATE]
+    # input_types = [InputDataType.UNEMPLOYMENT, InputDataType.EURO_STOXX_50, InputDataType.KEY_INTEREST_RATE]
+    input_types = [InputDataType.UNEMPLOYMENT]
     file_name_prefix = "_".join(data_type.file_base_name for data_type in input_types)
     model_path = project_dir / "model" / "lstm" / f"{file_name_prefix}_lstm.pt"
 
-    # lstm_model = UnemploymentLstm(64, input_dim=len(input_types))
-    lstm_model = UnemploymentLstm.load(model_path)
+    lstm_model = UnemploymentLstm(64, input_features=input_types)
+    # lstm_model = UnemploymentLstm.load(model_path)
 
     data = InputDataType.load_normalized_interpolated(input_types, data_dir)
 
@@ -205,12 +195,11 @@ if __name__ == "__main__":
     trainer = UnemploymentLstmTrainer(
         lstm_model,
         data,
-        input_features=input_types,
         test_data_masker=data_masker,
-        learning_rate=0.00001,
+        learning_rate=0.001,
         chunk_size=100,
     )
-    trainer.run(epochs=20000)
+    trainer.run(epochs=5000)
 
     trainer.model.save(model_path)
     for input_type in input_types:
