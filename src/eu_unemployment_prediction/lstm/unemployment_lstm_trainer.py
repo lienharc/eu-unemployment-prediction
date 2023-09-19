@@ -130,13 +130,13 @@ if __name__ == "__main__":
     project_dir = Path(__file__).parent.parent.parent.parent
     data_dir = project_dir / "data"
     img_dir = project_dir / "img"
-    # input_types = [InputDataType.UNEMPLOYMENT, InputDataType.EURO_STOXX_50, InputDataType.KEY_INTEREST_RATE]
-    input_types = [InputDataType.UNEMPLOYMENT]
+    input_types = [InputDataType.UNEMPLOYMENT, InputDataType.EURO_STOXX_50, InputDataType.KEY_INTEREST_RATE]
+    # input_types = [InputDataType.UNEMPLOYMENT]
     file_name_prefix = "_".join(data_type.file_base_name for data_type in input_types)
     model_path = project_dir / "model" / "lstm" / f"{file_name_prefix}_lstm.pt"
 
-    # lstm_model = UnemploymentLstm(64, input_features=input_types)
-    lstm_model = UnemploymentLstm.load(model_path)
+    lstm_model = UnemploymentLstm(64, input_features=input_types)
+    # lstm_model = UnemploymentLstm.load(model_path)
 
     def data_masker(index: pd.DatetimeIndex) -> npt.NDArray[np.bool_]:
         return index > "2023-03-01"  # type: ignore

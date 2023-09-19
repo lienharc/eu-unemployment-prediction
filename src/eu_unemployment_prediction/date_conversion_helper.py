@@ -3,8 +3,6 @@ from __future__ import annotations
 import re
 from typing import Callable, Dict
 
-import numpy as np
-import numpy.typing as npt
 import pandas as pd
 
 _QUARTERLY_PATTERN = re.compile(r"^(\d{4})(Q[1234])$")

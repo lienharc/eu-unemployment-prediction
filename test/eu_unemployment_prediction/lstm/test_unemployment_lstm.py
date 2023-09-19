@@ -3,7 +3,6 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from eu_unemployment_prediction.input_data_type import InputDataType
 from eu_unemployment_prediction.lstm import UnemploymentLstm
 
 
