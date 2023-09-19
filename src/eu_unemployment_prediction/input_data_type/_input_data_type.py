@@ -29,6 +29,18 @@ def _normalize_percentage_rate(x: npt.NDArray[np.float32]) -> npt.NDArray[np.flo
     return x / 100.0
 
 
+def _denormalize_percentage_rate(x: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
+    return x * 100.0
+
+
+def _normalize_eurostoxx(x: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
+    return x / 10000.0
+
+
+def _denormalize_eurostoxx(x: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
+    return x * 10000.0
+
+
 class InputDataType(Enum):
     UNEMPLOYMENT = InputDataTypeDefinition(
         "unemployment_seasonadjusted",
@@ -36,6 +48,7 @@ class InputDataType(Enum):
         load_data_named_month_index,
         DataPeriodicity.MONTHLY,
         _normalize_percentage_rate,
+        _denormalize_percentage_rate,
     )
     KEY_INTEREST_RATE = InputDataTypeDefinition(
         "key_interest_rate",
@@ -43,6 +56,7 @@ class InputDataType(Enum):
         load_data_valid_date,
         None,
         _normalize_percentage_rate,
+        _denormalize_percentage_rate,
         interpolation_method="pad",
     )
     DOLLAR_EURO_EXCHANGE_RATE = InputDataTypeDefinition(
@@ -93,6 +107,14 @@ class InputDataType(Enum):
         "labour costs",
         load_data_quarterly_index,
         DataPeriodicity.QUARTERLY,
+    )
+    EURO_STOXX_50 = InputDataTypeDefinition(
+        "euro_stoxx_50",
+        "euro stoxx 50",
+        load_data_named_month_index,
+        DataPeriodicity.MONTHLY,
+        _normalize_eurostoxx,
+        _denormalize_eurostoxx,
     )
 
     @property

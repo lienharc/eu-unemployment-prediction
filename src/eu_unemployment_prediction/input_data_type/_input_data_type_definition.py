@@ -23,4 +23,5 @@ class InputDataTypeDefinition:
     data_loader: Callable[[Path, str, str], pd.Series[float]]
     periodicity: Optional[DataPeriodicity]
     normalizer: Callable[[npt.NDArray[np.float32]], npt.NDArray[np.float32]] = _not_implemented_yet
+    denormalizer: Callable[[npt.NDArray[np.float32]], npt.NDArray[np.float32]] = _not_implemented_yet
     interpolation_method: InterpolateOptions = "cubicspline"
