@@ -83,7 +83,8 @@ class UnemploymentLstmTrainer:
                     self._LOGGER.warning(
                         f"Epoch {epoch:03d}/{epochs} | No training happened in this epoch. No training data?"
                     )
-                self._LOGGER.info(f"Epoch {epoch:03d}/{epochs} | loss: {loss}")
+                if epoch % 50 == 0:
+                    self._LOGGER.info(f"Epoch {epoch:03d}/{epochs} | loss: {loss}")
         except KeyboardInterrupt:
             self._LOGGER.warning(f"Learning process interrupted by user at epoch {epoch}/{epochs}")
 
