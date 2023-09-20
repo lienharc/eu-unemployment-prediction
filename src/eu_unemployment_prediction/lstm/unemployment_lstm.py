@@ -1,21 +1,32 @@
 from pathlib import Path
-from typing import Optional, Tuple, overload, Dict, Any
+from typing import Optional, Tuple, overload, Dict, Any, List
 
 import torch
 from torch import nn, Tensor
 
+from eu_unemployment_prediction.input_data_type import InputDataType
+
 
 class UnemploymentLstm(nn.Module):
-    def __init__(self, hidden_dim: int) -> None:
+    def __init__(self, hidden_dim: int, input_features: Optional[List[InputDataType]] = None) -> None:
         super().__init__()
-        input_dim = 1
         self._hidden_dim = hidden_dim
-        self._lstm = nn.LSTM(input_size=input_dim, hidden_size=self._hidden_dim)  # type: ignore
-        self._output_layer = nn.Linear(in_features=self._hidden_dim, out_features=input_dim, bias=True)
+        self._input_features = self._parse_input_features(input_features)
+        self._input_dim = len(self._input_features) + 1
+        self._lstm = nn.LSTM(input_size=self._input_dim, hidden_size=self._hidden_dim)  # type: ignore
+        self._output_layer = nn.Linear(in_features=self._hidden_dim, out_features=self._input_dim, bias=True)
 
     @property
     def hidden_dim(self) -> int:
         return self._hidden_dim
+
+    @property
+    def input_features(self) -> List[InputDataType]:
+        return self._input_features
+
+    @property
+    def input_dim(self) -> int:
+        return self._input_dim
 
     @overload
     def forward(self, x: Tensor) -> Tensor:
@@ -36,7 +47,7 @@ class UnemploymentLstm(nn.Module):
         return result, new_hidden
 
     def save(self, file_path: Path) -> None:
-        base_state = {"init_vars": {"hidden_dim": self.hidden_dim}}
+        base_state = {"init_vars": {"hidden_dim": self._hidden_dim, "input_features": self._input_features}}
         state_dict = self.state_dict(destination=base_state)
         torch.save(state_dict, file_path)
 
@@ -49,9 +60,19 @@ class UnemploymentLstm(nn.Module):
         loaded_model.eval()
         return loaded_model
 
+    @staticmethod
+    def _parse_input_features(input_features: Optional[List[InputDataType]]) -> List[InputDataType]:
+        if input_features is None:
+            return [InputDataType.UNEMPLOYMENT]
+        if InputDataType.UNEMPLOYMENT not in input_features:
+            raise ValueError("One of the input features has to be 'UNEMPLOYMENT'.")
+        return input_features
+
 
 if __name__ == "__main__":
-    pretrained_model_path = Path(__file__).parent.parent.parent.parent / "model" / "lstm" / "unemployment_lstm.pt"
+    pretrained_model_path = (
+        Path(__file__).parent.parent.parent.parent / "model" / "lstm" / "unemployment_seasonadjusted_lstm.pt"
+    )
     lstm = UnemploymentLstm.load(pretrained_model_path)
 
     inputs = [torch.tensor([i / 10.0]) for i in range(9)]

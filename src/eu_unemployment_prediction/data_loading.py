@@ -35,6 +35,7 @@ def load_data_named_month_index(data_dir: Path, file_name: str, column_name: str
         date_format="%Y%b",
         na_values={column_name: "-"},
     )
+    data_frame.index = data_frame.index.map(lambda date: date + pd.offsets.MonthEnd())
     return _reverse_order(data_frame).squeeze()  # type: ignore
 
 
@@ -65,4 +66,5 @@ def load_data_yearly_index(data_dir: Path, file_name: str, column_name: str) -> 
         date_format="%Y",
         na_values={column_name: "-"},
     )
+    data_frame.index = data_frame.index.map(lambda date: date + pd.offsets.YearEnd())
     return _reverse_order(data_frame).squeeze()  # type: ignore
