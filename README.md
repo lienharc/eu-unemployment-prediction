@@ -56,6 +56,43 @@ where the model has not been trained on.
 
 The model is very good at fitting the data it was trained on.
 
+#### Learning unemployment, key interest rate and eurostoxx 50 together
+
+As a next step we use the same LSTM model with on a higher-dimensional dataset.
+Apart from the unemployment rate we include the timestamps, ECB's key interest rate, and the Euro Stoxx 50 index.
+On a technical level, the LSTM model tries to predict a 4-dimensional vector at time $`t+1`$ given a 4-dimensional vector at time $`t`$.
+Each dimension represents one of the before mentioned features.
+The time-step distance is set to one month. 
+Since some of the underlying datasets like the one for the key interest rate are not provided monthly, but somewhat randomly, each feature may be
+interpolated in one or the other way in order to provide a monthly value.
+For example, for the key interest rate, we interpolate piece-wise constant, for a feature like GDP a cubic-spline interpolation would be used.
+
+##### Results
+
+While the LSTM model does fit the training data quite well, its predictions about the future are questionable.
+
+The following figures present the LSTM's predictions on the different features for both, train and test regions.
+
+<p float="middle">
+<img src="img/unemployment_seasonadjusted_euro_stoxx_50_key_interest_rate_lstm_unemployment_seasonadjusted.png" alt="unemployment chart" width="250">
+<img src="img/unemployment_seasonadjusted_euro_stoxx_50_key_interest_rate_lstm_key_interest_rate.png" alt="unemployment chart" width="250">
+<img src="img/unemployment_seasonadjusted_euro_stoxx_50_key_interest_rate_lstm_euro_stoxx_50.png" alt="unemployment chart" width="250">
+</p>
+
+Apparently the Euro-Zone will see a strong recovery with low unemployment and a booming stock market.
+
+Looking a little bit more closely at the regime where the model did not have training data, we see a good prediction for the ECB's key interest rate and rather bad or exaggerated predictions for the unemployment rate and the Euro Stoxx 50 index.
+
+<p float="middle">
+<img src="img/unemployment_seasonadjusted_euro_stoxx_50_key_interest_rate_lstm_unemployment_seasonadjusted_zoom.png" alt="unemployment chart" width="250">
+<img src="img/unemployment_seasonadjusted_euro_stoxx_50_key_interest_rate_lstm_key_interest_rate_zoom.png" alt="unemployment chart" width="250">
+<img src="img/unemployment_seasonadjusted_euro_stoxx_50_key_interest_rate_lstm_euro_stoxx_50_zoom.png" alt="unemployment chart" width="250">
+</p>
+
+These results are rather flaky.
+The LSTM will predict very different things if we start the test-range a little earlier or if we stop the training at a different point (with marginal differences in the overall loss).
+This may indicate that there is little covariance between unemployment, euro stoxx 50, and the key interest rate.
+
 ## Contributing
 
 The repo uses black and mypy among other things.
