@@ -39,12 +39,22 @@ class UnemploymentLstmTrainer:
         self._consistency_check()
 
         self._chunk_size = chunk_size
-        self._optimizer = torch.optim.Adam(self._model.parameters(), lr=learning_rate)
+        self._learning_rate = learning_rate
+        self._optimizer = torch.optim.Adam(self._model.parameters(), lr=self._learning_rate)
         self._loss_function = nn.MSELoss()
 
     @property
     def model(self) -> UnemploymentLstm:
         return self._model
+
+    @property
+    def learning_rate(self) -> float:
+        return self._learning_rate
+
+    @learning_rate.setter
+    def learning_rate(self, value: int) -> None:
+        self._learning_rate = value
+        self._optimizer = torch.optim.Adam(self._model.parameters(), lr=self._learning_rate)
 
     def run(self, epochs: int = 1000) -> None:
         epoch = 0
@@ -58,7 +68,7 @@ class UnemploymentLstmTrainer:
                         f"Epoch {epoch:03d}/{epochs} | No training happened in this epoch. No training data?"
                     )
                 if epoch % 50 == 0:
-                    self._LOGGER.info(f"Epoch {epoch:03d}/{epochs} | loss: {loss:.3e}")
+                    self._LOGGER.info(f"Epoch {epoch:03d}/{epochs} | loss: {loss:.3e}; lr: {self.learning_rate:.2e}")
         except KeyboardInterrupt:
             self._LOGGER.warning(f"Learning process interrupted by user at epoch {epoch}/{epochs}")
         self._model.eval()
