@@ -7,8 +7,6 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 import seaborn as sns
-import torch
-from torch import Tensor
 
 from eu_unemployment_prediction.input_data_type import InputDataType, DataPeriodicity
 
@@ -82,7 +80,7 @@ class DataLoader:
         self._add_type_labels()
         return new_index
 
-    def chunks(self, chunk_size: int) -> Generator[Tuple[Tensor, Tensor], None, None]:
+    def chunks(self, chunk_size: int) -> Generator[Tuple[npt.NDArray[np.float32], npt.NDArray[np.float32]], None, None]:
         """Generates chunks of (training_data, target_data) tuples in the right shape"""
         columns = [data_type.normalized_column_name for data_type in self.data_types]
         columns.append(self.FLOAT_DATE_NAME)
@@ -90,11 +88,9 @@ class DataLoader:
         target_data = self.train.iloc[1:].loc[:, columns]  # type: pd.DataFrame
         for start_index in range(0, self.train.shape[0], chunk_size):
             stop_index = start_index + chunk_size
-            input_chunk = torch.tensor(input_data.iloc[start_index:stop_index].to_numpy())
-            target_chunk = torch.tensor(target_data.iloc[start_index:stop_index].to_numpy())
-            lstm_input = input_chunk.view(input_chunk.shape[0], 1, -1)
-            targets = target_chunk
-            yield lstm_input, targets
+            train_chunk = input_data.iloc[start_index:stop_index].to_numpy(dtype=np.float32)
+            target_chunk = target_data.iloc[start_index:stop_index].to_numpy(dtype=np.float32)
+            yield train_chunk.reshape((train_chunk.shape[0], 1, -1)), target_chunk
 
     def plot(self, feature: InputDataType, plot_mask: Optional[npt.NDArray[np.bool_]] = None) -> plt.Axes:
         if plot_mask is None:

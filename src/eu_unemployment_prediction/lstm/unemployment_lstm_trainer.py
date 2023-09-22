@@ -22,6 +22,7 @@ class UnemploymentLstmTrainer:
         input_data: DataLoader,
         learning_rate: float = 0.001,
         chunk_size: int = 40,
+        device: torch.device = torch.device("cpu"),
     ) -> None:
         """
         :param lstm: An instance of the unemployment LSTM to be trained
@@ -31,6 +32,7 @@ class UnemploymentLstmTrainer:
         :param learning_rate: The learning rate during training
         :param chunk_size: The size of the chunks of the time series in between which the optimization is happening.
         """
+        self._device = device
         self._model = lstm
         self._data = input_data
 
@@ -46,6 +48,8 @@ class UnemploymentLstmTrainer:
 
     def run(self, epochs: int = 1000) -> None:
         epoch = 0
+        self._model.to(self._device)
+        self._model.train()
         try:
             for epoch in range(epochs):
                 loss = self._run_epoch()
@@ -57,19 +61,21 @@ class UnemploymentLstmTrainer:
                     self._LOGGER.info(f"Epoch {epoch:03d}/{epochs} | loss: {loss:.3e}")
         except KeyboardInterrupt:
             self._LOGGER.warning(f"Learning process interrupted by user at epoch {epoch}/{epochs}")
+        self._model.eval()
 
     def _run_epoch(self) -> Optional[Tensor]:
         loss = None
-        hidden = torch.zeros(1, 1, self._model.hidden_dim)
-        cell = torch.zeros(1, 1, self._model.hidden_dim)
+        hidden = torch.zeros(1, 1, self._model.hidden_dim).to(self._device)
+        cell = torch.zeros(1, 1, self._model.hidden_dim).to(self._device)
         for train_chunk, target_chunk in self._data.chunks(self._chunk_size):
+            lstm_input = torch.tensor(train_chunk).to(self._device)
             self._LOGGER.debug(f"Training with chunk of size {train_chunk.shape}")
             self._optimizer.zero_grad()
             hidden = hidden.detach()
             cell = cell.detach()
 
-            out, (hidden, cell) = self._model(train_chunk, (hidden, cell))
-            loss = self._loss_function(out, target_chunk)
+            out, (hidden, cell) = self._model(lstm_input, (hidden, cell))
+            loss = self._loss_function(out, torch.tensor(target_chunk).to(self._device))
 
             loss.backward()
             self._optimizer.step()
@@ -97,19 +103,24 @@ class UnemploymentLstmTrainer:
         plt.clf()
 
     def _predict_future(self) -> npt.NDArray[np.float32]:
-        hidden, cell = (torch.zeros(1, 1, self._model.hidden_dim), torch.zeros(1, 1, self._model.hidden_dim))
+        hidden, cell = (
+            torch.zeros(1, 1, self._model.hidden_dim).to(self._device),
+            torch.zeros(1, 1, self._model.hidden_dim).to(self._device),
+        )
         columns = [input_feature.normalized_column_name for input_feature in self._model.input_features]
         columns.append(self._data.FLOAT_DATE_NAME)
-        testi = self._data.train.loc[:, columns].to_numpy()
-        trained_input = torch.tensor(testi).view(self._data.train.shape[0], 1, -1)
+        train_data = self._data.train.loc[:, columns].to_numpy()
+        trained_input = torch.tensor(train_data).to(self._device).view(self._data.train.shape[0], 1, -1)
         predictions = []
         with torch.no_grad():
             trained_out, (hidden, cell) = self._model(trained_input, (hidden, cell))
             prediction = trained_out[-1]
             for i in range(self._data.test.shape[0] - 1):
                 prediction, (hidden, cell) = self._model(prediction.view(1, 1, self._model.input_dim), (hidden, cell))
-                predictions.append(prediction.view(self._model.input_dim).numpy())
-        full_prediction = np.concatenate([trained_out.numpy(), np.array(predictions)])  # type: npt.NDArray[np.float32]
+                predictions.append(prediction.view(self._model.input_dim).cpu().numpy())
+        full_prediction = np.concatenate(
+            [trained_out.cpu().numpy(), np.array(predictions)]
+        )  # type: npt.NDArray[np.float32]
 
         for index, feature in enumerate(self._model.input_features):
             full_prediction[:, index] = feature.value.denormalizer(full_prediction[:, index])
@@ -143,10 +154,7 @@ if __name__ == "__main__":
 
     data = DataLoader(data_dir, input_types, test_data_masker=data_masker)
     trainer = UnemploymentLstmTrainer(
-        lstm_model,
-        data,
-        learning_rate=0.001,
-        chunk_size=100,
+        lstm_model, data, learning_rate=0.001, chunk_size=100, device=torch.device("cuda")
     )
     trainer.run(epochs=10000)
 
