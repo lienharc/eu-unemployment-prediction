@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from enum import Enum
+from enum import Enum, unique
 from pathlib import Path
 from typing import Optional
 
@@ -41,8 +41,10 @@ def _denormalize_eurostoxx(x: npt.NDArray[np.float32]) -> npt.NDArray[np.float32
     return x * 10000.0
 
 
+@unique
 class InputDataType(Enum):
     UNEMPLOYMENT = InputDataTypeDefinition(
+        "U",
         "unemployment_seasonadjusted",
         "unemployment rate",
         load_data_named_month_index,
@@ -51,6 +53,7 @@ class InputDataType(Enum):
         _denormalize_percentage_rate,
     )
     KEY_INTEREST_RATE = InputDataTypeDefinition(
+        "K",
         "key_interest_rate",
         "key interest rate",
         load_data_valid_date,
@@ -60,18 +63,21 @@ class InputDataType(Enum):
         interpolation_method="pad",
     )
     DOLLAR_EURO_EXCHANGE_RATE = InputDataTypeDefinition(
+        "D",
         "dollar_euro_exchange_rate",
         "exchange rate",
         load_data_valid_date,
         DataPeriodicity.DAILY,
     )
     GDP = InputDataTypeDefinition(
+        "G",
         "gdp_at_market_price",
         "gdp at market price",
         load_data_quarterly_index,
         DataPeriodicity.QUARTERLY,
     )
     GOV_DEBT = InputDataTypeDefinition(
+        "V",
         "government_debt",
         "government debt",
         load_data_quarterly_index,
@@ -79,36 +85,42 @@ class InputDataType(Enum):
         lambda x: x / 1000.0,
     )
     INFLATION_RATE = InputDataTypeDefinition(
+        "I",
         "inflation_rate",
         "inflation rate",
         load_data_named_month_index,
         DataPeriodicity.MONTHLY,
     )
     LABOUR_PRODUCTIVITY = InputDataTypeDefinition(
+        "L",
         "labour_productivity",
         "labour productivity",
         load_data_quarterly_index,
         DataPeriodicity.QUARTERLY,
     )
     MONETARY_AGGREGATE_M3 = InputDataTypeDefinition(
+        "M",
         "monetary_aggregate_m3",
         "m3",
         load_data_named_month_index,
         DataPeriodicity.MONTHLY,
     )
     POPULATION = InputDataTypeDefinition(
+        "P",
         "population",
         "population",
         load_data_yearly_index,
         DataPeriodicity.YEARLY,
     )
     LABOUR_COSTS = InputDataTypeDefinition(
+        "C",
         "unit_labour_costs",
         "labour costs",
         load_data_quarterly_index,
         DataPeriodicity.QUARTERLY,
     )
     EURO_STOXX_50 = InputDataTypeDefinition(
+        "E",
         "euro_stoxx_50",
         "euro stoxx 50",
         load_data_named_month_index,

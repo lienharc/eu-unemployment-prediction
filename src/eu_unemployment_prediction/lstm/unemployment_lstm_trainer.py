@@ -143,7 +143,7 @@ if __name__ == "__main__":
     img_dir = project_dir / "img"
     input_types = [InputDataType.UNEMPLOYMENT, InputDataType.EURO_STOXX_50, InputDataType.KEY_INTEREST_RATE]
     # input_types = [InputDataType.UNEMPLOYMENT]
-    file_name_prefix = "_".join(data_type.file_base_name for data_type in input_types)
+    file_name_prefix = "".join(data_type.value.identifier for data_type in input_types)
     model_path = project_dir / "model" / "lstm" / f"{file_name_prefix}_lstm.pt"
 
     lstm_model = UnemploymentLstm(64, input_features=input_types)

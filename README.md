@@ -74,9 +74,9 @@ While the LSTM model does fit the training data quite well, its predictions abou
 The following figures present the LSTM's predictions on the different features for both, train and test regions.
 
 <p float="middle">
-<img src="img/unemployment_seasonadjusted_euro_stoxx_50_key_interest_rate_lstm_unemployment_seasonadjusted.png" alt="unemployment chart" width="250">
-<img src="img/unemployment_seasonadjusted_euro_stoxx_50_key_interest_rate_lstm_key_interest_rate.png" alt="unemployment chart" width="250">
-<img src="img/unemployment_seasonadjusted_euro_stoxx_50_key_interest_rate_lstm_euro_stoxx_50.png" alt="unemployment chart" width="250">
+<img src="img/UEK_lstm_unemployment_seasonadjusted.png" alt="unemployment chart" width="250">
+<img src="img/UEK_lstm_key_interest_rate.png" alt="unemployment chart" width="250">
+<img src="img/UEK_lstm_euro_stoxx_50.png" alt="unemployment chart" width="250">
 </p>
 
 Apparently the Euro-Zone will see a strong recovery with low unemployment and a booming stock market.
@@ -84,9 +84,9 @@ Apparently the Euro-Zone will see a strong recovery with low unemployment and a 
 Looking a little bit more closely at the regime where the model did not have training data, we see a good prediction for the ECB's key interest rate and rather bad or exaggerated predictions for the unemployment rate and the Euro Stoxx 50 index.
 
 <p float="middle">
-<img src="img/unemployment_seasonadjusted_euro_stoxx_50_key_interest_rate_lstm_unemployment_seasonadjusted_zoom.png" alt="unemployment chart" width="250">
-<img src="img/unemployment_seasonadjusted_euro_stoxx_50_key_interest_rate_lstm_key_interest_rate_zoom.png" alt="unemployment chart" width="250">
-<img src="img/unemployment_seasonadjusted_euro_stoxx_50_key_interest_rate_lstm_euro_stoxx_50_zoom.png" alt="unemployment chart" width="250">
+<img src="img/UEK_lstm_unemployment_seasonadjusted_zoom.png" alt="unemployment chart" width="250">
+<img src="img/UEK_lstm_key_interest_rate_zoom.png" alt="unemployment chart" width="250">
+<img src="img/UEK_lstm_euro_stoxx_50_zoom.png" alt="unemployment chart" width="250">
 </p>
 
 These results are rather flaky.
@@ -105,4 +105,3 @@ Install dev dependencies:
 ```shell
 pip install .[dev]
 ```
-
