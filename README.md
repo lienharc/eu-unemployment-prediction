@@ -48,13 +48,15 @@ We do not expect good predictions but the LSTM should be able to learn some form
 
 The following figure shows the output of the LSTM model (hidden state dimension: 32) trained on the time series up to 2022-01-01. 
 
-![lstm_unemployment](img/lstm_unemployment.png)
-
-Predictions about the "future" after 2022-01-01 are very wrong (again, as expected),
-however, some sort of correlation length was learned and is used in the regime
-where the model has not been trained on.
+![lstm_unemployment](img/lstm_U_unemployment_seasonadjusted.png)
 
 The model is very good at fitting the data it was trained on.
+Predictions about the "future" after 2022-01-01 are not bad but may be subject to a favourable cut-off point for test/training data.
+It is safe to say, that some sort of correlation length was learned and is used in the regime
+where the model has not been trained on.
+
+![lstm unemployment zoomed](img/lstm_U_unemployment_seasonadjusted_zoom.png)
+
 
 #### Learning unemployment, key interest rate and eurostoxx 50 together
 
@@ -74,24 +76,23 @@ While the LSTM model does fit the training data quite well, its predictions abou
 The following figures present the LSTM's predictions on the different features for both, train and test regions.
 
 <p float="middle">
-<img src="img/UEK_lstm_unemployment_seasonadjusted.png" alt="unemployment chart" width="250">
-<img src="img/UEK_lstm_key_interest_rate.png" alt="unemployment chart" width="250">
-<img src="img/UEK_lstm_euro_stoxx_50.png" alt="unemployment chart" width="250">
+<img src="img/lstm_UEK_unemployment_seasonadjusted.png" alt="unemployment chart" width="250">
+<img src="img/lstm_UEK_key_interest_rate.png" alt="unemployment chart" width="250">
+<img src="img/lstm_UEK_euro_stoxx_50.png" alt="unemployment chart" width="250">
 </p>
 
-Apparently the Euro-Zone will see a strong recovery with low unemployment and a booming stock market.
-
-Looking a little bit more closely at the regime where the model did not have training data, we see a good prediction for the ECB's key interest rate and rather bad or exaggerated predictions for the unemployment rate and the Euro Stoxx 50 index.
+Looking a little bit more closely at the regime where the model did not have training data, we see good predictions for the ECB's key interest and the Euro Stoxx 50 index
+but rather bad or exaggerated predictions for the unemployment rate.
 
 <p float="middle">
-<img src="img/UEK_lstm_unemployment_seasonadjusted_zoom.png" alt="unemployment chart" width="250">
-<img src="img/UEK_lstm_key_interest_rate_zoom.png" alt="unemployment chart" width="250">
-<img src="img/UEK_lstm_euro_stoxx_50_zoom.png" alt="unemployment chart" width="250">
+<img src="img/lstm_UEK_unemployment_seasonadjusted_zoom.png" alt="unemployment chart" width="250">
+<img src="img/lstm_UEK_key_interest_rate_zoom.png" alt="unemployment chart" width="250">
+<img src="img/lstm_UEK_euro_stoxx_50_zoom.png" alt="unemployment chart" width="250">
 </p>
 
 These results are rather flaky.
 The LSTM will predict very different things if we start the test-range a little earlier or if we stop the training at a different point (with marginal differences in the overall loss).
-This may indicate that there is little covariance between unemployment, euro stoxx 50, and the key interest rate.
+This may indicate that there is little covariance between unemployment rate, Euro Stoxx 50, and the key interest rate.
 
 ## Contributing
 

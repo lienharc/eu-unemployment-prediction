@@ -143,36 +143,3 @@ class UnemploymentLstmTrainer:
                     f'Expected a column named "{data_type.normalized_column_name}" in the input_data.'
                     f"Existing column names: {self._data.columns}"
                 )
-
-
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
-    torch.manual_seed(42)
-    project_dir = Path(__file__).parent.parent.parent.parent
-    data_dir = project_dir / "data"
-    img_dir = project_dir / "img"
-    input_types = [InputDataType.UNEMPLOYMENT, InputDataType.EURO_STOXX_50, InputDataType.KEY_INTEREST_RATE]
-    # input_types = [InputDataType.UNEMPLOYMENT]
-    file_name_prefix = "".join(data_type.value.identifier for data_type in input_types)
-    model_path = project_dir / "model" / "lstm" / f"{file_name_prefix}_lstm.pt"
-
-    lstm_model = UnemploymentLstm(64, input_features=input_types)
-    # lstm_model = UnemploymentLstm.load(model_path)
-
-    def data_masker(index: pd.DatetimeIndex) -> npt.NDArray[np.bool_]:
-        return index > "2023-03-01"  # type: ignore
-
-    data = DataLoader(data_dir, input_types, test_data_masker=data_masker)
-    trainer = UnemploymentLstmTrainer(
-        lstm_model, data, learning_rate=0.001, chunk_size=100, device=torch.device("cuda")
-    )
-    trainer.run(epochs=10000)
-
-    trainer.model.save(model_path)
-    for input_type in input_types:
-        trainer.plot(img_dir / f"{file_name_prefix}_lstm_{input_type.file_base_name}.png", input_type)
-        trainer.plot(
-            img_dir / f"{file_name_prefix}_lstm_{input_type.file_base_name}_zoom.png",
-            input_type,
-            plot_mask=data.full.index > "2022-01-01",
-        )
