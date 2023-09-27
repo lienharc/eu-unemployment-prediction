@@ -107,22 +107,18 @@ class UnemploymentLstmTrainer:
         plt.clf()
 
     def _predict_future(self) -> npt.NDArray[np.float32]:
+        steps = self._data.test.shape[0] - 1
         hidden_dim = self._model.hidden_dim
-        hidden = torch.zeros(1, hidden_dim, device=self._device)
-        cell = torch.zeros(1, hidden_dim, device=self._device)
+        hidden = torch.zeros(1, hidden_dim, device=self._device), torch.zeros(1, hidden_dim, device=self._device)
         columns = [input_feature.normalized_column_name for input_feature in self._model.input_features]
         columns.append(self._data.FLOAT_DATE_NAME)
         train_data = self._data.train.loc[:, columns].to_numpy()
         trained_input = torch.tensor(train_data, device=self._device)
-        predictions = []
         with torch.no_grad():
-            trained_out, (hidden, cell) = self._model(trained_input, (hidden, cell))
-            prediction = trained_out[-1:]
-            for i in range(self._data.test.shape[0] - 1):
-                prediction, (hidden, cell) = self._model(prediction, (hidden, cell))
-                predictions.append(prediction.view(self._model.input_dim).cpu().numpy())
+            trained_out, hidden = self._model(trained_input, hidden)
+            predictions = torch.stack(list(self._model.predict_future(steps, trained_out[-1], hidden)))
         full_prediction = np.concatenate(
-            [trained_out.cpu().numpy(), np.array(predictions)]
+            [trained_out.cpu().numpy(), predictions.cpu().numpy()]
         )  # type: npt.NDArray[np.float32]
 
         for index, feature in enumerate(self._model.input_features):

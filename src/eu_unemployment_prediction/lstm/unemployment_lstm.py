@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Optional, Tuple, overload, Dict, Any, List
+from typing import Optional, Tuple, overload, Dict, Any, List, Generator
 
 import torch
 from torch import nn, Tensor
@@ -45,6 +45,25 @@ class UnemploymentLstm(nn.Module):
         if hidden is None:
             return result
         return result, new_hidden
+
+    def predict_future(
+        self, steps: int, x: Tensor, hidden: Optional[Tuple[Tensor, Tensor]] = None
+    ) -> Generator[Tensor, None, None]:
+        """Predicts the future based on an starting point x and the hidden state.
+
+        :param steps: Number of (time) steps to predict
+        :param x: Starting input tensor, shape: (input_dim,) (no batch size dimension!)
+        :param hidden: Starting hidden tensors, shape: (1, hidden_dim) respectively
+        :return: A generator for the outputs (does not include the hidden states).
+            Each element has shape: (input_dim,)
+            To get a tensor combining all steps with shape (steps, input_dim), use
+            >>> torch.stack(list(model.predict_future(...)))
+        """
+        last_output = x.view(1, -1)
+        last_hidden_state = hidden
+        for i in range(steps):
+            last_output, last_hidden_state = self(last_output, last_hidden_state)
+            yield last_output.squeeze()
 
     def save(self, file_path: Path) -> None:
         base_state = {"init_vars": {"hidden_dim": self._hidden_dim, "input_features": self._input_features}}
