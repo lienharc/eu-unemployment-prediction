@@ -7,7 +7,7 @@ import numpy.typing as npt
 import pandas as pd
 import torch
 
-from eu_unemployment_prediction.input_data_type import InputDataType
+from eu_unemployment_prediction.input_data_type import InputDataType, DataPeriodicity
 from eu_unemployment_prediction.lstm import UnemploymentLstmTrainer, UnemploymentLstm, DataLoader
 
 
@@ -53,8 +53,13 @@ def train_and_plot(
     def data_masker(index: pd.DatetimeIndex) -> npt.NDArray[np.bool_]:
         return index > test_data_cut_off_date  # type: ignore
 
-    data = DataLoader(data_dir, features, test_data_masker=data_masker)
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    data = DataLoader(data_dir, features, periodicity=DataPeriodicity.MONTHLY, test_data_masker=data_masker)
+    if torch.cuda.is_available():
+        logging.info("Found cuda, training on gpu")
+        device = torch.device("cuda")
+    else:
+        logging.info("Could not find cuda, training on cpu")
+        device = torch.device("cpu")
     trainer = UnemploymentLstmTrainer(lstm, data, chunk_size=300, device=device)
     for lr in learning_rates:
         trainer.learning_rate = lr
@@ -65,7 +70,7 @@ def train_and_plot(
         trainer.plot(
             img_dir / f"lstm_{file_prefix}_{feature.file_base_name}_zoom.png",
             feature,
-            plot_mask=data.full.index > plot_zoom_date,
+            plot_mask=(data.full.index > plot_zoom_date),
         )
 
 

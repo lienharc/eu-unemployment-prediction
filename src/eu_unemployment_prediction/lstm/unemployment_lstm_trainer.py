@@ -75,17 +75,17 @@ class UnemploymentLstmTrainer:
 
     def _run_epoch(self) -> Optional[Tensor]:
         loss = None
-        hidden = torch.zeros(1, 1, self._model.hidden_dim).to(self._device)
-        cell = torch.zeros(1, 1, self._model.hidden_dim).to(self._device)
+        hidden = torch.zeros(1, 1, self._model.hidden_dim, device=self._device)
+        cell = torch.zeros(1, 1, self._model.hidden_dim, device=self._device)
         for train_chunk, target_chunk in self._data.chunks(self._chunk_size):
-            lstm_input = torch.tensor(train_chunk).to(self._device)
+            lstm_input = torch.tensor(train_chunk, device=self._device)
             self._LOGGER.debug(f"Training with chunk of size {train_chunk.shape}")
             self._optimizer.zero_grad()
             hidden = hidden.detach()
             cell = cell.detach()
 
             out, (hidden, cell) = self._model(lstm_input, (hidden, cell))
-            loss = self._loss_function(out, torch.tensor(target_chunk).to(self._device))
+            loss = self._loss_function(out, torch.tensor(target_chunk, device=self._device))
 
             loss.backward()
             self._optimizer.step()
@@ -113,14 +113,15 @@ class UnemploymentLstmTrainer:
         plt.clf()
 
     def _predict_future(self) -> npt.NDArray[np.float32]:
+        hidden_dim = self._model.hidden_dim
         hidden, cell = (
-            torch.zeros(1, 1, self._model.hidden_dim).to(self._device),
-            torch.zeros(1, 1, self._model.hidden_dim).to(self._device),
+            torch.zeros(1, 1, hidden_dim, device=self._device),
+            torch.zeros(1, 1, hidden_dim, device=self._device),
         )
         columns = [input_feature.normalized_column_name for input_feature in self._model.input_features]
         columns.append(self._data.FLOAT_DATE_NAME)
         train_data = self._data.train.loc[:, columns].to_numpy()
-        trained_input = torch.tensor(train_data).to(self._device).view(self._data.train.shape[0], 1, -1)
+        trained_input = torch.tensor(train_data, device=self._device).view(self._data.train.shape[0], 1, -1)
         predictions = []
         with torch.no_grad():
             trained_out, (hidden, cell) = self._model(trained_input, (hidden, cell))
