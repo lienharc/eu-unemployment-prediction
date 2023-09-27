@@ -44,7 +44,7 @@ def train_and_plot(
     if not isinstance(learning_rates, list):
         learning_rates = [learning_rates]
     file_prefix = "".join(feature.value.identifier for feature in features)
-    model_path = project_dir / "model" / "lstm" / f"lstm_{file_prefix}.pt"
+    model_path = project_dir / "model" / "lstm" / f"lstm_{file_prefix}_{lstm_hidden_dim}.pt"
     data_dir = project_dir / "data"
     img_dir = project_dir / "img"
 
