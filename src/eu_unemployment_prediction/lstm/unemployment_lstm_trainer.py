@@ -4,7 +4,6 @@ from typing import Optional
 
 import numpy as np
 import numpy.typing as npt
-import pandas as pd
 import torch
 from matplotlib import pyplot as plt
 from torch import nn, Tensor

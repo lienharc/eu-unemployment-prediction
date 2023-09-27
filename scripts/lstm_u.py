@@ -1,8 +1,7 @@
 import logging
 
-from eu_unemployment_prediction.input_data_type import InputDataType
 from base_lstm import train_and_plot
-
+from eu_unemployment_prediction.input_data_type import InputDataType
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
