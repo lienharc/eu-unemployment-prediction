@@ -60,17 +60,14 @@ class UnemploymentLstmTrainer:
         epoch = 0
         self._model.to(self._device)
         self._model.train()
-        try:
-            for epoch in range(epochs):
-                loss = self._run_epoch()
-                if loss is None:
-                    self._LOGGER.warning(
-                        f"Epoch {epoch:03d}/{epochs} | No training happened in this epoch. No training data?"
-                    )
-                if epoch % 50 == 0:
-                    self._LOGGER.info(f"Epoch {epoch:03d}/{epochs} | loss: {loss:.3e}; lr: {self.learning_rate:.2e}")
-        except KeyboardInterrupt:
-            self._LOGGER.warning(f"Learning process interrupted by user at epoch {epoch}/{epochs}")
+        for epoch in range(epochs):
+            loss = self._run_epoch()
+            if loss is None:
+                self._LOGGER.warning(
+                    f"Epoch {epoch:03d}/{epochs} | No training happened in this epoch. No training data?"
+                )
+            if epoch % 50 == 0:
+                self._LOGGER.info(f"Epoch {epoch:03d}/{epochs} | loss: {loss:.3e}; lr: {self.learning_rate:.2e}")
         self._model.eval()
 
     def _run_epoch(self) -> Optional[Tensor]:
