@@ -1,3 +1,4 @@
+import warnings
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Optional, Dict, Callable, Generator, Tuple
@@ -113,7 +114,9 @@ class DataLoader:
 
     def _reindex_interpolated(self, feature: InputDataType, new_index: pd.DatetimeIndex) -> pd.DataFrame:
         interpolated_df = self._raw_data[feature].reindex(self._raw_data[feature].index.union(new_index))
-        interpolated_df = interpolated_df.interpolate(method=feature.value.interpolation_method)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=FutureWarning)
+            interpolated_df = interpolated_df.interpolate(method=feature.value.interpolation_method)
         interpolated_df = interpolated_df.reindex(new_index)
         return interpolated_df
 
