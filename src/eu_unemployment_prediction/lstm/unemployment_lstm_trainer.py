@@ -13,8 +13,6 @@ from eu_unemployment_prediction.lstm import UnemploymentLstm, DataLoader
 
 
 class UnemploymentLstmTrainer:
-    _LOGGER = logging.getLogger("UnemploymentLstmTrainer")
-
     def __init__(
         self,
         lstm: UnemploymentLstm,
@@ -31,6 +29,7 @@ class UnemploymentLstmTrainer:
         :param learning_rate: The learning rate during training
         :param chunk_size: The size of the chunks of the time series in between which the optimization is happening.
         """
+        self._LOGGER = logging.getLogger(self.__class__.__name__)
         self._device = device
         self._model = lstm
         self._data = input_data
@@ -56,7 +55,6 @@ class UnemploymentLstmTrainer:
         self._optimizer = torch.optim.Adam(self._model.parameters(), lr=self._learning_rate)
 
     def run(self, epochs: int = 1000) -> None:
-        epoch = 0
         self._model.to(self._device)
         self._model.train()
         for epoch in range(epochs):
@@ -71,8 +69,8 @@ class UnemploymentLstmTrainer:
 
     def _run_epoch(self) -> Optional[Tensor]:
         loss = None
-        hidden = torch.zeros(1, 1, self._model.hidden_dim, device=self._device)
-        cell = torch.zeros(1, 1, self._model.hidden_dim, device=self._device)
+        hidden = torch.zeros(1, self._model.hidden_dim, device=self._device)
+        cell = torch.zeros(1, self._model.hidden_dim, device=self._device)
         for train_chunk, target_chunk in self._data.chunks(self._chunk_size):
             lstm_input = torch.tensor(train_chunk, device=self._device)
             self._LOGGER.debug(f"Training with chunk of size {train_chunk.shape}")
@@ -110,20 +108,18 @@ class UnemploymentLstmTrainer:
 
     def _predict_future(self) -> npt.NDArray[np.float32]:
         hidden_dim = self._model.hidden_dim
-        hidden, cell = (
-            torch.zeros(1, 1, hidden_dim, device=self._device),
-            torch.zeros(1, 1, hidden_dim, device=self._device),
-        )
+        hidden = torch.zeros(1, hidden_dim, device=self._device)
+        cell = torch.zeros(1, hidden_dim, device=self._device)
         columns = [input_feature.normalized_column_name for input_feature in self._model.input_features]
         columns.append(self._data.FLOAT_DATE_NAME)
         train_data = self._data.train.loc[:, columns].to_numpy()
-        trained_input = torch.tensor(train_data, device=self._device).view(self._data.train.shape[0], 1, -1)
+        trained_input = torch.tensor(train_data, device=self._device)
         predictions = []
         with torch.no_grad():
             trained_out, (hidden, cell) = self._model(trained_input, (hidden, cell))
-            prediction = trained_out[-1]
+            prediction = trained_out[-1:]
             for i in range(self._data.test.shape[0] - 1):
-                prediction, (hidden, cell) = self._model(prediction.view(1, 1, self._model.input_dim), (hidden, cell))
+                prediction, (hidden, cell) = self._model(prediction, (hidden, cell))
                 predictions.append(prediction.view(self._model.input_dim).cpu().numpy())
         full_prediction = np.concatenate(
             [trained_out.cpu().numpy(), np.array(predictions)]

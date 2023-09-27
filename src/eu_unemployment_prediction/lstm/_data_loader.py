@@ -91,7 +91,7 @@ class DataLoader:
             stop_index = start_index + chunk_size
             train_chunk = input_data.iloc[start_index:stop_index].to_numpy(dtype=np.float32)
             target_chunk = target_data.iloc[start_index:stop_index].to_numpy(dtype=np.float32)
-            yield train_chunk.reshape((train_chunk.shape[0], 1, -1)), target_chunk
+            yield train_chunk, target_chunk
 
     def plot(self, feature: InputDataType, plot_mask: Optional[npt.NDArray[np.bool_]] = None) -> plt.Axes:
         if plot_mask is None:
