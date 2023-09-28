@@ -6,6 +6,7 @@ import numpy as np
 import numpy.typing as npt
 import torch
 from matplotlib import pyplot as plt
+from matplotlib.dates import ConciseDateFormatter
 from torch import nn, Tensor
 
 from eu_unemployment_prediction.input_data_type import InputDataType
@@ -84,6 +85,7 @@ class UnemploymentLstmTrainer:
         return loss
 
     def plot(self, file_path: Path, feature: InputDataType, plot_mask: Optional[npt.NDArray[np.bool_]] = None) -> None:
+        self._LOGGER.info(f"Creating plot {file_path.name} for feature {feature}")
         if feature not in self._model.input_features:
             raise ValueError(
                 f"Cannot plot results for {feature} since it is not part of the model. "
@@ -99,8 +101,10 @@ class UnemploymentLstmTrainer:
             c="red",
             label="LSTM out",
         )
+        ax.xaxis.set_major_formatter(ConciseDateFormatter(ax.xaxis.get_major_locator()))
         ax.legend()
         plt.savefig(file_path, dpi=500)
+        self._LOGGER.info(f"Saved plot to {file_path.as_uri()}")
         plt.clf()
 
     def _predict_future(self) -> npt.NDArray[np.float32]:
