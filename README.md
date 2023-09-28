@@ -5,6 +5,8 @@ zone based on macroeconomic data issued by ECB.
 
 The main motivation for this project is to familiarize ourselves with machine learning on time series data.
 
+Jump to [Latest results](#latest)
+
 ## Data sources
 
 The source for our data sets is the [ECB's statistics portal](https://sdw.ecb.europa.eu/), exclusively.
@@ -42,6 +44,8 @@ _See [unemployment_gp_trainer.py](src/eu_unemployment_prediction/simple_gp/unemp
 
 #### Only learning based on recent unemployment rate
 
+([Source](scripts/lstm_u.py))
+
 Given a time series of the unemployment rate the LSTM is trained to predict the next unemployment rate.
 In a first step we only train it with recent unemployment rates and will look into pouring more macroeconomic data into the model in later stages.
 We do not expect good predictions but the LSTM should be able to learn some form of correlation lengths similar to the gaussian process above.
@@ -58,7 +62,10 @@ where the model has not been trained on.
 ![lstm unemployment zoomed](img/lstm_U_unemployment_seasonadjusted_zoom.png)
 
 
+<a name="latest"></a>
 #### Learning unemployment, key interest rate and eurostoxx 50 together
+
+([Source](scripts/lstm_uek.py))
 
 As a next step we use the same LSTM model with on a higher-dimensional dataset.
 Apart from the unemployment rate we include the timestamps, ECB's key interest rate, and the Euro Stoxx 50 index.
