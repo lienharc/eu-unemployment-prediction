@@ -69,16 +69,13 @@ class UnemploymentLstmTrainer:
 
     def _run_epoch(self) -> Optional[Tensor]:
         loss = None
-        hidden = torch.zeros(1, self._model.hidden_dim, device=self._device)
-        cell = torch.zeros(1, self._model.hidden_dim, device=self._device)
+        hidden = tuple(torch.zeros(1, self._model.hidden_dim, device=self._device) for _ in range(2))
         for train_chunk, target_chunk in self._data.chunks(self._chunk_size):
             lstm_input = torch.tensor(train_chunk, device=self._device)
             self._LOGGER.debug(f"Training with chunk of size {train_chunk.shape}")
             self._optimizer.zero_grad()
-            hidden = hidden.detach()
-            cell = cell.detach()
 
-            out, (hidden, cell) = self._model(lstm_input, (hidden, cell))
+            out, hidden = self._model(lstm_input, hidden)
             loss = self._loss_function(out, torch.tensor(target_chunk, device=self._device))
 
             loss.backward()
