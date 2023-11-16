@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-from enum import Enum
+from enum import Enum, unique
 from pathlib import Path
 from typing import Optional
 
 import matplotlib.pyplot as plt
-import numpy as np
-import numpy.typing as npt
 import pandas as pd
 import seaborn as sns
 from tueplots.constants.color.palettes import muted
@@ -22,99 +20,125 @@ from eu_unemployment_prediction.input_data_type._input_data_type_definition impo
 
 __all__ = ["InputDataType", "InputDataTypeDefinition", "DataPeriodicity"]
 
+from eu_unemployment_prediction.input_data_type._normalization import (
+    _normalize_max10,
+    _denormalize_max10,
+    _normalize_max100,
+    _denormalize_max100,
+    _normalize_max1e3,
+    _denormalize_max1e3,
+    _normalize_max1e5,
+    _denormalize_max1e5,
+    _normalize_max1e6,
+    _denormalize_max1e6,
+    _normalize_max1e7,
+    _denormalize_max1e7,
+)
+
 sns.set_theme(style="whitegrid")
 
 
-def _normalize_percentage_rate(x: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
-    return x / 100.0
-
-
-def _denormalize_percentage_rate(x: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
-    return x * 100.0
-
-
-def _normalize_eurostoxx(x: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
-    return x / 10000.0
-
-
-def _denormalize_eurostoxx(x: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
-    return x * 10000.0
-
-
+@unique
 class InputDataType(Enum):
     UNEMPLOYMENT = InputDataTypeDefinition(
+        "U",
         "unemployment_seasonadjusted",
         "unemployment rate",
         load_data_named_month_index,
         DataPeriodicity.MONTHLY,
-        _normalize_percentage_rate,
-        _denormalize_percentage_rate,
+        _normalize_max100,
+        _denormalize_max100,
     )
     KEY_INTEREST_RATE = InputDataTypeDefinition(
+        "K",
         "key_interest_rate",
         "key interest rate",
         load_data_valid_date,
         None,
-        _normalize_percentage_rate,
-        _denormalize_percentage_rate,
+        _normalize_max100,
+        _denormalize_max100,
         interpolation_method="pad",
     )
     DOLLAR_EURO_EXCHANGE_RATE = InputDataTypeDefinition(
+        "D",
         "dollar_euro_exchange_rate",
         "exchange rate",
         load_data_valid_date,
         DataPeriodicity.DAILY,
+        _normalize_max10,
+        _denormalize_max10,
     )
     GDP = InputDataTypeDefinition(
+        "G",
         "gdp_at_market_price",
         "gdp at market price",
         load_data_quarterly_index,
         DataPeriodicity.QUARTERLY,
+        _normalize_max1e7,
+        _denormalize_max1e7,
     )
     GOV_DEBT = InputDataTypeDefinition(
+        "V",
         "government_debt",
         "government debt",
         load_data_quarterly_index,
         DataPeriodicity.QUARTERLY,
-        lambda x: x / 1000.0,
+        _normalize_max1e3,
+        _denormalize_max1e3,
     )
     INFLATION_RATE = InputDataTypeDefinition(
+        "I",
         "inflation_rate",
         "inflation rate",
         load_data_named_month_index,
         DataPeriodicity.MONTHLY,
+        _normalize_max100,
+        _denormalize_max100,
     )
     LABOUR_PRODUCTIVITY = InputDataTypeDefinition(
+        "L",
         "labour_productivity",
         "labour productivity",
         load_data_quarterly_index,
         DataPeriodicity.QUARTERLY,
+        _normalize_max100,
+        _denormalize_max100,
     )
     MONETARY_AGGREGATE_M3 = InputDataTypeDefinition(
+        "M",
         "monetary_aggregate_m3",
         "m3",
         load_data_named_month_index,
         DataPeriodicity.MONTHLY,
+        _normalize_max100,
+        _denormalize_max100,
     )
     POPULATION = InputDataTypeDefinition(
+        "P",
         "population",
         "population",
         load_data_yearly_index,
         DataPeriodicity.YEARLY,
+        _normalize_max1e6,
+        _denormalize_max1e6,
     )
     LABOUR_COSTS = InputDataTypeDefinition(
+        "C",
         "unit_labour_costs",
         "labour costs",
         load_data_quarterly_index,
         DataPeriodicity.QUARTERLY,
+        _normalize_max100,
+        _denormalize_max100,
     )
     EURO_STOXX_50 = InputDataTypeDefinition(
+        "E",
         "euro_stoxx_50",
         "euro stoxx 50",
         load_data_named_month_index,
         DataPeriodicity.MONTHLY,
-        _normalize_eurostoxx,
-        _denormalize_eurostoxx,
+        _normalize_max1e5,
+        _denormalize_max1e5,
     )
 
     @property

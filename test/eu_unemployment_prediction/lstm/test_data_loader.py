@@ -96,16 +96,15 @@ def test_chunk_generator(data_dir: Path) -> None:
     data_types = [InputDataType.UNEMPLOYMENT, InputDataType.KEY_INTEREST_RATE]
     data_loader = DataLoader(data_dir, data_types)
     input_dimension = len(data_types) + 1
+
     chunks = list(data_loader.chunks(chunk_size))
 
     first_train_chunk = chunks[0][0]
     first_target_chunk = chunks[0][1]
     assert first_train_chunk.shape == (chunk_size, 1, input_dimension)
     assert first_target_chunk.shape == (chunk_size, input_dimension)
-    np.testing.assert_equal(
-        first_train_chunk.view(chunk_size, input_dimension).numpy()[1:], first_target_chunk.numpy()[:-1]
-    )
+    np.testing.assert_equal(first_train_chunk[1:, 0], first_target_chunk[:-1])
 
-    first_element_in_second_train_chunk = chunks[1][0].view(chunk_size, input_dimension).numpy()[0]
-    last_element_in_first_target_chunk = first_target_chunk.numpy()[-1]
+    first_element_in_second_train_chunk = chunks[1][0][0, 0]
+    last_element_in_first_target_chunk = first_target_chunk[-1]
     np.testing.assert_equal(first_element_in_second_train_chunk, last_element_in_first_target_chunk)

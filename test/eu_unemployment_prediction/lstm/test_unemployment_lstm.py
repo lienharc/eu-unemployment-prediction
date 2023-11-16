@@ -30,5 +30,5 @@ def test_save_and_reload_model(tmpdir: Path) -> None:
 
 
 def test_load_with_pretrained_model_without_error(module_dir: Path) -> None:
-    pretrained_model_path = module_dir / "lstm" / "unemployment_seasonadjusted_lstm.pt"
+    pretrained_model_path = module_dir / "lstm" / "U_lstm.pt"
     UnemploymentLstm.load(pretrained_model_path)
